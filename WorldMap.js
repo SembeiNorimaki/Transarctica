@@ -1,4 +1,4 @@
-function WorldMap(data, tracks, buildings, cities) {
+function WorldMap(data, tracks, buildings, cities, industries) {
   const TILE_WIDTH_HALF = [32, 64, 128];
   const TILE_HEIGHT_HALF = [16, 32, 64];
 
@@ -93,6 +93,7 @@ function WorldMap(data, tracks, buildings, cities) {
   this.tracks = tracks;
   this.buildings = buildings;
   this.cities = cities;
+  this.industries = industries;
 
   this.board = Array.from(Array(this.NROWS), () => new Array(this.NCOLS));
 
@@ -116,7 +117,7 @@ function WorldMap(data, tracks, buildings, cities) {
           screenPos = this.map2screen(col, row, zoom);
           screenPos.add(createVector(this.NROWS * TILE_WIDTH_HALF[zoom], 0))
           try {  
-            this.fullImage[zoom].image(this.tracks[this.tileIdx2name[this.board[row][col]]].imgs[zoom], 
+            this.fullImage[zoom].image(this.tracks[this.tileIdx2name[this.board[row][col]]].img, 
               screenPos.x, 
               screenPos.y);
           } catch (error) {
@@ -175,55 +176,35 @@ function WorldMap(data, tracks, buildings, cities) {
 
     try {  
       if (this.board[row][col] == 0x81) {  // stations BC
-        canvas.image(this.tracks["BC"].imgs[cameraPos.z],
-          screenPos.x, 
-          screenPos.y,
-          2*TILE_WIDTH_HALF[cameraPos.z], 2*TILE_HEIGHT_HALF[cameraPos.z]);
-        canvas.image(this.tracks["sBC1"].imgs[cameraPos.z], 
-          screenPos.x, 
-          screenPos.y-82);
-        // image(this.tracks["sBC1"].imgs[cameraPos.z], 
-        //   screenPos.x+80, 
-        //   screenPos.y-42);
+        canvas.image(this.tracks["0"].img, screenPos.x, screenPos.y);
+        //canvas.image(this.tracks["sBC1"].img, screenPos.x-25, screenPos.y-56);
+        canvas.image(this.tracks["sBC1"].img, screenPos.x+40, screenPos.y-22);
       } else if (this.board[row][col] == 0x82) {    // stations AD
-        canvas.image(this.tracks["AD"].imgs[cameraPos.z],
-          screenPos.x, 
-          screenPos.y,
-          2*TILE_WIDTH_HALF[cameraPos.z], 2*TILE_HEIGHT_HALF[cameraPos.z]);
-        canvas.image(this.tracks["sAD"].imgs[cameraPos.z], 
-          screenPos.x+73, 
-          screenPos.y-80);
-        // image(this.tracks["sBC2"].imgs[cameraPos.z], 
-        //   screenPos.x+80, 
-        //   screenPos.y-42);
-      } else if (this.board[row][col] == 0x00) {
-        canvas.image(this.tracks[this.tileIdx2name[this.board[row][col]]].imgs[cameraPos.z], 
-          screenPos.x, 
-          screenPos.y,
-          2*TILE_WIDTH_HALF[cameraPos.z], 2*TILE_HEIGHT_HALF[cameraPos.z]);
-        
-        // image(this.tracks["trees"].imgs[cameraPos.z], 
-        //     screenPos.x+40, 
-        //     screenPos.y-40);
-        
+        canvas.image(this.tracks["0"].img, screenPos.x, screenPos.y);
+        canvas.image(this.tracks["sAD"].img, screenPos.x-28, screenPos.y); 
+      } else if (this.board[row][col] == 0x98) {    // industry
+        console.log("Industry")
+        canvas.image(this.tracks["0"].img, screenPos.x, screenPos.y);
+        canvas.image(this.industries["q"].img, screenPos.x, screenPos.y-15); 
+      } else if (this.board[row][col] >= 0x40) {    // stations AD
+        canvas.image(this.tracks["0"].img, screenPos.x, screenPos.y);
+        canvas.image(this.buildings[(this.board[row][col]-0x40).toString()].img, screenPos.x-28, screenPos.y-15); 
       } else {
-        canvas.image(this.tracks[this.tileIdx2name[this.board[row][col]]].imgs[cameraPos.z], 
-          screenPos.x, 
-          screenPos.y,
-          2*TILE_WIDTH_HALF[cameraPos.z], 2*TILE_HEIGHT_HALF[cameraPos.z]);
+        canvas.image(this.tracks[this.tileIdx2name[this.board[row][col]]].img, screenPos.x, screenPos.y);
       }
     } catch (error) {
-      console.log(row, col)
-      return
-      if (this.board[row][col] >= 0x40 && this.board[row][col] <=0x6B) {
-        canvas.image(this.tracks[this.tileIdx2name[0]].imgs[cameraPos.z],
-          screenPos.x, 
-          screenPos.y,
-          2*TILE_WIDTH_HALF[cameraPos.z], 2*TILE_HEIGHT_HALF[cameraPos.z]);
-        canvas.image(this.buildings["7"].imgs[cameraPos.z],
-          screenPos.x,
-          screenPos.y-90);
-      }
+      //console.log(row, col)
+      return;
+
+      // if (this.board[row][col] >= 0x40 && this.board[row][col] <=0x6B) {
+      //   canvas.image(this.tracks[this.tileIdx2name[0]].img,
+      //     screenPos.x, 
+      //     screenPos.y,
+      //     2*TILE_WIDTH_HALF[cameraPos.z], 2*TILE_HEIGHT_HALF[cameraPos.z]);
+      //   canvas.image(this.buildings["7"].img,
+      //     screenPos.x,
+      //     screenPos.y-90);
+      // }
     }
   }
 

@@ -1,9 +1,9 @@
-function Locomotive(pos) {
+function Locomotive(pos, orientation) {
   // position of the locomotive in a 2d map, with decimals
   this.position = pos;
   this.prevPosition = pos.copy();
   // orientation in a 2d map, in degrees, from 0 to 360
-  this.orientation = 0.0;
+  this.orientation = orientation;
   this.prevOrientation = 0.0;
 
   this.frontSensor = createVector(0.4, 0).setHeading(radians(this.orientation)).add(this.position);
@@ -87,7 +87,6 @@ function Locomotive(pos) {
   }
 
   this.checkFrontSensor = (worldMap) => {
-
     let deltaX = this.currentTileFrontSensor.x - this.currentTile.x;
     let deltaY = this.currentTileFrontSensor.y - this.currentTile.y;
     let tileName = worldMap.tileIdx2name[worldMap.board[this.currentTileFrontSensor.y][this.currentTileFrontSensor.x]];
@@ -104,12 +103,14 @@ function Locomotive(pos) {
   this.newOrientation = (worldMap) => {
     //console.log(worldMap.tileIdx2name[worldMap.board[this.currentTile.y][this.currentTile.x]]);
     // stations make the train stop
-    if ([0x81, 0x82].includes(worldMap.board[this.currentTile.y][this.currentTile.x])) {
-      this.stop();
-      this.braking.setMag(this.velocity.mag()*this.velocity.mag()/1.2);
-      console.log(this.braking.mag())
-      return;
-    }
+    // if ([0x81, 0x82].includes(worldMap.board[this.currentTile.y][this.currentTile.x])) {
+    //   this.stop();
+    //   this.braking.setMag(this.velocity.mag()*this.velocity.mag()/1.2);
+    //   console.log(this.braking.mag())
+    //   return;
+    // }
+
+    console.log(this.currentTile.x, this.currentTile.y,worldMap.map2idx(createVector(this.currentTile.x, this.currentTile.y)))
     switch(worldMap.tileIdx2name[worldMap.board[this.currentTile.y][this.currentTile.x]]) {
       case("AB"):
       case("ABc"):
@@ -215,15 +216,15 @@ function Locomotive(pos) {
     
 
     // update wagons
-    for (let wagon of this.wagons) {
-      if (wagon.enteredNewTile()) {
-        console.log(wagon.currentTile.array(), wagon.prevTile.array())
-        console.log("new tile")
-        wagon.newOrientation(worldMap);
-      }
-      wagon.setVelocityMag(this.velocity.mag());
-      wagon.update();
-    }
+    // for (let wagon of this.wagons) {
+    //   if (wagon.enteredNewTile()) {
+    //     console.log(wagon.currentTile.array(), wagon.prevTile.array())
+    //     console.log("new tile")
+    //     wagon.newOrientation(worldMap);
+    //   }
+    //   wagon.setVelocityMag(this.velocity.mag());
+    //   wagon.update();
+    // }
 
     // update sprite
     if (this.gear == "D") {
