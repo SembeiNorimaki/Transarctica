@@ -1,0 +1,16 @@
+{
+    "64": {
+        "name": "Taoudeni",
+        "goods": {
+            "metal": 10,
+            "sulfur": 5
+        }
+    },
+    "65": {
+        "name": "Marrakesh",
+        "goods": {
+            "water": 20,
+            "livestock": 50
+        }
+    }
+}

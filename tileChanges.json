@@ -1,0 +1,14 @@
+{
+	"CDb": "BDc",
+	"BDc": "BCd",
+	"BCd": "CDb",
+	"ABd": "ADb",
+	"ADb": "BDa",
+	"BDa": "ABd",
+	"CDa": "ADc",
+	"ADc": "ACd",
+	"ACd": "CDa",
+	"ACb": "BCa",
+	"BCa": "ABc",
+	"ABc": "ACb"
+}
