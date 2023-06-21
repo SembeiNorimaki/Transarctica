@@ -9,9 +9,9 @@ function Hud(hudData) {
 
   
   this.buttons = [
-    new ClickableRegion(createVector(80, 30), [this.hudData.frame, this.hudData.button_find]),
-    new ClickableRegion(createVector(80+140, 30), [this.hudData.frame, this.hudData.button_book]),
-    new ClickableRegion(createVector(80+2*140, 30), [this.hudData.frame, this.hudData.button_map])
+    new ClickableRegion(createVector(80, 30), [100, 40], [this.hudData.frame, this.hudData.button_find], ""),
+    new ClickableRegion(createVector(80+140, 30), [100, 40], [this.hudData.frame, this.hudData.button_book], ""),
+    new ClickableRegion(createVector(80+2*140, 30), [100, 40], [this.hudData.frame, this.hudData.button_map], "")
   ]
   
   

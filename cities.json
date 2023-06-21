@@ -1,6 +1,7 @@
 {
     "64": {
         "name": "Taoudeni",
+        "industry": "Wood",
         "goods": {
             "metal": 10,
             "sulfur": 5
@@ -8,6 +9,7 @@
     },
     "65": {
         "name": "Marrakesh",
+        "industry": "Wood",
         "goods": {
             "water": 20,
             "livestock": 50

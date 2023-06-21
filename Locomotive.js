@@ -1,10 +1,11 @@
-function Locomotive(pos, orientation) {
+function Locomotive(pos, orientation, wagonsData) {
   // position of the locomotive in a 2d map, with decimals
   this.position = pos;
   this.prevPosition = pos.copy();
   // orientation in a 2d map, in degrees, from 0 to 360
   this.orientation = orientation;
   this.prevOrientation = 0.0;
+  this.wagonsData = wagonsData;
 
   this.frontSensor = createVector(0.4, 0).setHeading(radians(this.orientation)).add(this.position);
 
@@ -27,16 +28,98 @@ function Locomotive(pos, orientation) {
   this.maxVelocity = 0.03;
 
   this.gear = "N";  // Neutral, Direct
-  this.gold = 500;
+  this.gold = 5000;
   this.fuel = 1000;
+
+  this.capacity = {
+    "Coal": 0,
+    "Iron": 0,
+    "Oil": 0,
+    "Livestock": 0,
+    "Wood": 0
+  }
+
+  this.cargo = {
+    "Coal": 0,
+    "Iron": 0,
+    "Oil": 0,
+    "Livestock": 0,
+    "Wood": 0
+  }
   
 
   
   // We start the train with a locomotive, tender, command, barracks
 
-  this.addWagon = (wagon) => {
-    this.wagons.push(wagon);
+  this.addWagon = (wagonType) => {
+    console.log(wagonType, this.wagonsData[wagonType])
+    let newWagon = new Wagon(1, wagonType, this.wagonsData[wagonType]);
+    this.wagons.push(newWagon);
+    // update train capacities and weight
+    this.capacity[wagonType] += newWagon.capacity;
   } 
+  // returns:
+  // 0: No error, resource added successfully
+  // 1: not enough gold
+  // 2: no enough storage 
+  this.addResource = (resourceType, qty, price) => {
+    if (price > this.gold) {
+      console.log("Not enough gold");
+      return 1;
+    }
+    for (let i=0; i<this.wagons.length; i++) {
+      if (this.wagons[i].cargo == resourceType) {
+        console.log(`Wagon ${i} can transport ${resourceType}`);
+        if (this.wagons[i].capacity - this.wagons[i].content < qty) {
+          console.log(`Wagon ${i} does not have enough room for ${resourceType}`);
+          continue;
+        }
+        this.wagons[i].content += qty;
+        this.cargo[resourceType] += qty;
+        this.gold -= price;
+        return 0;
+      }
+    }
+    return 2;
+  }
+
+  this.showHorizontalTrain = (canvas, xpos) => {
+    canvas.imageMode(CORNER);
+    canvas.image(this.wagons[0].img[0], xpos, 740 + this.wagons[0].offsety);
+    xpos -= this.wagons[1].dimensions[0]+10;
+    for (let i=0; i< this.wagons.length-1; i++) {
+      if (this.wagons[i].content == 0) {
+        canvas.image(this.wagons[i].img[0], xpos, 740 + this.wagons[i].offsety);
+      }
+      else if (this.wagons[i].content == this.wagons[i].capacity) {
+        canvas.image(this.wagons[i].img[this.wagons[i].img.length-1], xpos, 740 + this.wagons[i].offsety);
+      }
+      //canvas.rect(xpos-this.wagons[i+1].dimensions[0]/2, 830, 120,5);
+      //canvas.rect(xpos-this.wagons[i+1].dimensions[0]/2-10, 825, 100,5);
+      canvas.text(`${this.wagons[i].content} / ${this.wagons[i].capacity}`,
+        xpos+this.wagons[i].dimensions[0]/2-30, 835);
+      xpos -= this.wagons[i+1].dimensions[0]+10;
+    }
+    if (this.wagons[this.wagons.length-1].content == 0) {
+      canvas.image(this.wagons[this.wagons.length-1].img[0], xpos, 740 + this.wagons[this.wagons.length-1].offsety);
+    }
+    else if (this.wagons[this.wagons.length-1].content == this.wagons[this.wagons.length-1].capacity) {
+      canvas.image(this.wagons[this.wagons.length-1].img[this.wagons[this.wagons.length-1].img.length-1], xpos, 740 + this.wagons[this.wagons.length-1].offsety);
+    }
+    else if (this.wagons[this.wagons.length-1].img.length > 1) {
+      canvas.image(this.wagons[this.wagons.length-1].img[1], xpos, 740 + this.wagons[this.wagons.length-1].offsety);
+    }
+
+    
+    canvas.text(`${this.wagons[this.wagons.length-1].content} / ${this.wagons[this.wagons.length-1].capacity}`,
+        xpos+this.wagons[this.wagons.length-1].dimensions[0]/2-30, 835);
+
+    // for (let wagon of this.wagons) {
+    //   canvas.image(wagon.img, xpos, 740 + wagon.offsety);
+    //   xpos -= 132;
+    // }
+    canvas.imageMode(CENTER);
+  }
 
   this.show = (canvas, cameraPos, imgData, worldMap) => {    
     this.screenPos = worldMap.map2screen(this.position.x, this.position.y, cameraPos.z);

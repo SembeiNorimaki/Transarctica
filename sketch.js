@@ -8,6 +8,7 @@ let locomotiveData = {};
 let wagonData = {};
 let mapData;
 let tracksData = {};
+let roadsData = {};
 let buildingsData = {};
 let citiesData = {};
 let hudData = {};
@@ -30,9 +31,12 @@ let currentCity;
 let ts;
 let fullImage;
 
-let industriesData = {};
+let industryData = {};
 
-let currentScene = "Navigation";
+
+let backgroundImg, combatImg;
+
+let currentScene;
 //let scenes = ("Navigation", "CityTrade", "WagonTrade", "Combat");
 
 let events = {
@@ -42,7 +46,7 @@ let events = {
 };
 
 function preload() {
-  // citiesData = loadJSON("cities.json");
+  citiesData = loadJSON("cities.json");
 
   loadJSON("hud.json", jsonData => {    
     for (const [key, val] of Object.entries(jsonData)) {
@@ -52,13 +56,20 @@ function preload() {
 
   loadJSON("industries.json", jsonData => {    
     for (const [key, val] of Object.entries(jsonData)) {
-      industriesData[key] = {"img": loadImage(`resources/industries/${val}`)};
+      industryData[key] = val;
+      industryData[key].img = loadImage(`resources/industries/${val.file}`);
     }
   });
 
   loadJSON("tracks.json", jsonData => {    
     for (const [key, val] of Object.entries(jsonData)) {
       tracksData[key] = {"img": loadImage(`resources/tracks/${val}_zi4.png`)};
+    }
+  });
+
+  loadJSON("roads.json", jsonData => {    
+    for (const [key, val] of Object.entries(jsonData)) {
+      roadsData[key] = {"img": loadImage(`resources/roads/${val}_zi4.png`)};
     }
   });
 
@@ -96,13 +107,13 @@ function preload() {
     }
   });
 
-  loadJSON("resources/tr_wagons.json", jsonData => {
+  loadJSON("tr_wagons.json", jsonData => {
     trWagonData = jsonData;
     for (const [key, val] of Object.entries(jsonData)) {      
-      trWagonData[key] = {
-        "img": loadImage(val.file),
-        "dimensions": val.dimensions,
-        "offsety": val.offsety
+      trWagonData[key] = val;
+      trWagonData[key].img = [];
+      for (let filename of val.files) {
+        trWagonData[key].img.push(loadImage(filename));
       }
     }
   });
@@ -124,8 +135,38 @@ function initialize() {
   hudCanvas.fill(200);
   hudCanvas.noStroke();
 
+  mainCanvas.rectMode(CENTER);
   mainCanvas.imageMode(CENTER);
   mainCanvas.background(0);
+
+  // populate background image
+  backgroundImg = createGraphics(1900, 900);
+  combatImg = createGraphics(1900, 900);
+  for (let row=0; row<16; row++) {
+    for (let col=0; col<9; col++) {
+      x = col*128*2 + (128 * (row%2)+1) -128
+      y = row*64 -64;
+      backgroundImg.image(tracksData["0"].img, x, y);
+      combatImg.image(tracksData["0"].img, x, y);
+    }
+  }
+  for (let i=-1;i<15;i++) {
+    if (i%2) {
+      backgroundImg.image(tracksData["H1"].img, i*128, 825);
+      combatImg.image(tracksData["H1"].img, i*128, 825);
+    }
+    else {
+      backgroundImg.image(tracksData["H2"].img, i*128, 825);
+      combatImg.image(tracksData["H2"].img, i*128, 825);
+    }
+  }
+  
+  for (let i=-1;i<15;i++) {
+    if (i%2)
+      combatImg.image(tracksData["H1"].img, i*128, 100);
+    else
+      combatImg.image(tracksData["H2"].img, i*128, 100);
+  }
 }
 
 function setup() {  
@@ -133,22 +174,30 @@ function setup() {
   mainCanvas = createGraphics(1900, 840);
   hudCanvas = createGraphics(1900, 60);  
   initialize();  
-
+  background(100)
+  
   hud = new Hud(hudData);
-  worldMap = new WorldMap(mapData, tracksData, buildingsData, citiesData, industriesData);
+  worldMap = new WorldMap(mapData, tracksData, buildingsData, citiesData, industryData);
   let aux = worldMap.map2screen(9, 64, 2);
   cameraPos.set(aux.x, aux.y, 2);
 
-  locomotive = new Locomotive(createVector(9, 64), 90.0); 
-  locomotive.addWagon("locomotive");
-  locomotive.addWagon("tender");
-  locomotive.addWagon("cannon");
-  locomotive.addWagon("livestock");
+  locomotive = new Locomotive(createVector(9, 64), 90.0, trWagonData); 
+  locomotive.addWagon("Locomotive");
+  locomotive.addWagon("Tender");
+  locomotive.addWagon("Cannon");
+  locomotive.addWagon("Livestock");
+  locomotive.addWagon("Oil");
+  locomotive.addWagon("Iron");
+  locomotive.addWagon("Wood");
 
-  //let scnwagontrade = new ScnWagonTrade(tracksData, trWagonData);
-  //scnwagontrade.show(locomotive);
-  //noLoop();
-  //return;
+  
+  currentScene = "CityTrade";
+  currentCity = new ScnCityTrade(citiesData[64], industryData, roadsData, buildingsData, backgroundImg);
+
+  //currentScene = "Combat";
+  //currentCity = new ScnCombat(combatImg);
+  //currentScene = "WagonTrade";
+  //currentCity = new ScnWagonTrade(tracksData, trWagonData, backgroundImg);
 
   switch(currentScene) {
     case("Navigation"):
@@ -160,8 +209,10 @@ function setup() {
       currentCity.show(mainCanvas, locomotive);
     break;
     case("WagonTrade"):
+      currentCity.show(mainCanvas, locomotive);
     break;
     case("Combat"):
+      currentCity.show(mainCanvas, locomotive);
     break;
   };
 
@@ -197,12 +248,14 @@ function draw() {
         worldMap.drawTile(mainCanvas, locomotive.currentTile.y-1, locomotive.currentTile.x);
       }
       
+
       if (locomotive.enteredNewTile()) {
         locomotive.newOrientation(worldMap);
-        if (worldMap.map2idx(locomotive.currentTile) in events) {
+        let tileIdx = worldMap.map2idx(locomotive.currentTile);
+        if (tileIdx in events) {
           console.log("Arrived to a city");
-          locomotive.stop();
-          currentCity = new ScnWagonTrade(tracksData, trWagonData);
+          locomotive.stop();          
+          currentCity = new ScnCityTrade(citiesData[events[tileIdx]], industryData, roadsData, buildingsData, backgroundImg);
           currentScene = "CityTrade";
         }
       }
@@ -211,11 +264,16 @@ function draw() {
       
     break;
     case("CityTrade"):
+      currentCity.update(locomotive);  
       currentCity.show(mainCanvas, locomotive);
     break;
     case("WagonTrade"):
+      currentCity.update();
+      currentCity.show(mainCanvas, locomotive);
     break;
     case("Combat"):
+      currentCity.update();
+      currentCity.show(mainCanvas, locomotive);
     break;
   };
 
@@ -272,15 +330,37 @@ function mouseWheel(event) {
 }
 
 function keyPressed() {
-  if (keyCode == CONTROL) {
-    locomotive.startStop();
-  }
-  if (keyCode == SHIFT) {
-    locomotive.turn180(worldMap);
+  switch(currentScene) {
+    case("Navigation"):
+      if (keyCode == CONTROL) {
+        locomotive.startStop();
+      }
+      if (keyCode == SHIFT) {
+        locomotive.turn180(worldMap);
+      }
+    case("CityTrade"):
+      currentCity.processKey(keyCode);
+    break;
+    case("WagonTrade"):
+      currentCity.processKey(keyCode);
+    break;
   }
 }
 
 function mouseClicked() {
-  worldMap.processClick(mouseX-width/2, mouseY-height/2, cameraPos);
-  redrawMap();  //Todo: only redraw clicked tile
+  let action;
+  switch(currentScene) {
+    case("Navigation"):
+      worldMap.processClick(mouseX-width/2, mouseY-height/2, cameraPos);
+      redrawMap();  //Todo: only redraw clicked tile  
+    break;
+    case("CityTrade"):
+      action = currentCity.processClick(mouseX, mouseY, locomotive);
+      if (action == 1)
+        currentScene = "Navigation";
+        redrawMap();
+    break;
+    case("WagonTrade"):
+    break;
+  }  
 }
