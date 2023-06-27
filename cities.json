@@ -1,18 +1,24 @@
 {
     "64": {
         "name": "Taoudeni",
-        "industry": "Wood",
+        "industry": "Container",
+        "sellPrice": 25,
+        "availableQty": 5000,
         "goods": {
-            "metal": 10,
-            "sulfur": 5
+            "Iron": 100,
+            "Oil": 50,
+            "Container": 200
         }
     },
     "65": {
         "name": "Marrakesh",
-        "industry": "Wood",
+        "industry": "Oil",
+        "sellPrice": 30,
+        "availableQty": 5000,
         "goods": {
-            "water": 20,
-            "livestock": 50
+            "Iron": 20,
+            "Oil": 10,
+            "Container": 100
         }
     }
 }

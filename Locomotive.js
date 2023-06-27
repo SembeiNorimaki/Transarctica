@@ -36,89 +36,65 @@ function Locomotive(pos, orientation, wagonsData) {
     "Iron": 0,
     "Oil": 0,
     "Livestock": 0,
-    "Wood": 0
+    "Wood": 0,
+    "Container": 0
   }
 
-  this.cargo = {
+  this.usedSpace = {
     "Coal": 0,
     "Iron": 0,
     "Oil": 0,
     "Livestock": 0,
-    "Wood": 0
+    "Wood": 0,
+    "Container": 0
   }
   
 
-  
-  // We start the train with a locomotive, tender, command, barracks
-
-  this.addWagon = (wagonType) => {
-    console.log(wagonType, this.wagonsData[wagonType])
+  this.addWagon = (wagonType) => {    
     let newWagon = new Wagon(1, wagonType, this.wagonsData[wagonType]);
     this.wagons.push(newWagon);
-    // update train capacities and weight
+    // update train capacities
     this.capacity[wagonType] += newWagon.capacity;
   } 
-  // returns:
-  // 0: No error, resource added successfully
-  // 1: not enough gold
-  // 2: no enough storage 
-  this.addResource = (resourceType, qty, price) => {
+ 
+  this.buyResource = (resourceName, qty, price) => {
     if (price > this.gold) {
-      console.log("Not enough gold");
-      return 1;
+      throw("Not enough gold");
     }
-    for (let i=0; i<this.wagons.length; i++) {
-      if (this.wagons[i].cargo == resourceType) {
-        console.log(`Wagon ${i} can transport ${resourceType}`);
-        if (this.wagons[i].capacity - this.wagons[i].content < qty) {
-          console.log(`Wagon ${i} does not have enough room for ${resourceType}`);
+
+    // Search for a wagon that can store the resource
+    for (let wagon of this.wagons) {
+      if (wagon.resourceName == resourceName) {
+        try {
+          wagon.addResource(qty);
+        } catch (err) {
           continue;
         }
-        this.wagons[i].content += qty;
-        this.cargo[resourceType] += qty;
+        this.usedSpace[resourceName] += qty;
         this.gold -= price;
-        return 0;
+        return;
       }
     }
-    return 2;
+    throw("No available space in train");
+  }
+
+  this.sellResource = (wagon, qty, price) => {
+    try {
+      wagon.removeResource(qty);
+    } catch (err) {
+      throw(err);
+    }    
+    this.gold += price;
   }
 
   this.showHorizontalTrain = (canvas, xpos) => {
-    canvas.imageMode(CORNER);
-    canvas.image(this.wagons[0].img[0], xpos, 740 + this.wagons[0].offsety);
-    xpos -= this.wagons[1].dimensions[0]+10;
-    for (let i=0; i< this.wagons.length-1; i++) {
-      if (this.wagons[i].content == 0) {
-        canvas.image(this.wagons[i].img[0], xpos, 740 + this.wagons[i].offsety);
-      }
-      else if (this.wagons[i].content == this.wagons[i].capacity) {
-        canvas.image(this.wagons[i].img[this.wagons[i].img.length-1], xpos, 740 + this.wagons[i].offsety);
-      }
-      //canvas.rect(xpos-this.wagons[i+1].dimensions[0]/2, 830, 120,5);
-      //canvas.rect(xpos-this.wagons[i+1].dimensions[0]/2-10, 825, 100,5);
-      canvas.text(`${this.wagons[i].content} / ${this.wagons[i].capacity}`,
-        xpos+this.wagons[i].dimensions[0]/2-30, 835);
-      xpos -= this.wagons[i+1].dimensions[0]+10;
+    let ypos = 800; 
+    for (let wagon of this.wagons) {
+      xpos -= wagon.halfSize[0];
+      wagon.showHorizontal(canvas, createVector(xpos, ypos));
+      canvas.circle(xpos, ypos,5)
+      xpos -= wagon.halfSize[0]+10;
     }
-    if (this.wagons[this.wagons.length-1].content == 0) {
-      canvas.image(this.wagons[this.wagons.length-1].img[0], xpos, 740 + this.wagons[this.wagons.length-1].offsety);
-    }
-    else if (this.wagons[this.wagons.length-1].content == this.wagons[this.wagons.length-1].capacity) {
-      canvas.image(this.wagons[this.wagons.length-1].img[this.wagons[this.wagons.length-1].img.length-1], xpos, 740 + this.wagons[this.wagons.length-1].offsety);
-    }
-    else if (this.wagons[this.wagons.length-1].img.length > 1) {
-      canvas.image(this.wagons[this.wagons.length-1].img[1], xpos, 740 + this.wagons[this.wagons.length-1].offsety);
-    }
-
-    
-    canvas.text(`${this.wagons[this.wagons.length-1].content} / ${this.wagons[this.wagons.length-1].capacity}`,
-        xpos+this.wagons[this.wagons.length-1].dimensions[0]/2-30, 835);
-
-    // for (let wagon of this.wagons) {
-    //   canvas.image(wagon.img, xpos, 740 + wagon.offsety);
-    //   xpos -= 132;
-    // }
-    canvas.imageMode(CENTER);
   }
 
   this.show = (canvas, cameraPos, imgData, worldMap) => {    
@@ -132,16 +108,13 @@ function Locomotive(pos, orientation, wagonsData) {
     
 
     canvas.image(imgData[this.orientation.toString()].imgList[this.spriteIdx], this.screenPos.x, this.screenPos.y);
-    canvas.circle(this.screenPos.x, this.screenPos.y, 5);
+    //canvas.circle(this.screenPos.x, this.screenPos.y, 5);
 
-    this.screenPos = worldMap.map2screen(this.frontSensor.x, this.frontSensor.y, cameraPos.z);
-    this.screenPos.add(-cameraPos.x,  -cameraPos.y);
-    this.screenPos.add(canvas.width/2, canvas.height/2);
-    // this.screenPos.add([
-    //   imgData[this.orientation].offset[0],
-    //   imgData[this.orientation].offset[1] 
-    // ]);
-    canvas.circle(this.screenPos.x, this.screenPos.y, 5);
+    //this.screenPos = worldMap.map2screen(this.frontSensor.x, this.frontSensor.y, cameraPos.z);
+    //this.screenPos.add(-cameraPos.x,  -cameraPos.y);
+    //this.screenPos.add(canvas.width/2, canvas.height/2);
+
+    //canvas.circle(this.screenPos.x, this.screenPos.y, 5);
 
   }
 

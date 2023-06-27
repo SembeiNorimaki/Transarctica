@@ -58,6 +58,10 @@ function preload() {
     for (const [key, val] of Object.entries(jsonData)) {
       industryData[key] = val;
       industryData[key].img = loadImage(`resources/industries/${val.file}`);
+      industryData[key].imgs = [];
+      for (let aux of val.files) {
+        industryData[key].imgs.push(loadImage(`resources/industries/${aux}`));
+      }
     }
   });
 
@@ -153,13 +157,19 @@ function initialize() {
   for (let i=-1;i<15;i++) {
     if (i%2) {
       backgroundImg.image(tracksData["H1"].img, i*128, 825);
+      backgroundImg.image(tracksData["H1"].img, i*128, 825-90);
       combatImg.image(tracksData["H1"].img, i*128, 825);
     }
     else {
       backgroundImg.image(tracksData["H2"].img, i*128, 825);
+      backgroundImg.image(tracksData["H2"].img, i*128, 825-90);
       combatImg.image(tracksData["H2"].img, i*128, 825);
     }
   }
+
+  // for (let i=0; i<7; i++) {
+  //   backgroundImg.image(tracksData["BC"].img, 256*2+i*128, 600-i*64);
+  // }
   
   for (let i=-1;i<15;i++) {
     if (i%2)
@@ -189,13 +199,15 @@ function setup() {
   locomotive.addWagon("Oil");
   locomotive.addWagon("Iron");
   locomotive.addWagon("Wood");
-
+  locomotive.addWagon("Container");
   
-  currentScene = "CityTrade";
-  currentCity = new ScnCityTrade(citiesData[64], industryData, roadsData, buildingsData, backgroundImg);
 
-  //currentScene = "Combat";
-  //currentCity = new ScnCombat(combatImg);
+  //currentScene = "Navigation";
+  currentScene = "CityTrade";
+  currentCity = new ScnCityTrade(citiesData[65], industryData, roadsData, buildingsData, backgroundImg);
+
+  // currentScene = "Combat";
+  // currentCity = new ScnCombat(combatImg);
   //currentScene = "WagonTrade";
   //currentCity = new ScnWagonTrade(tracksData, trWagonData, backgroundImg);
 

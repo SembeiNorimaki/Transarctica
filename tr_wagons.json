@@ -2,7 +2,7 @@
 	"Locomotive": {
 		"files": ["resources/tr_wagons/trn_locomotive_tr.png"],
 		"dimensions": [256, 66],
-		"offsety": 0,
+		"offsety": [20],
 		"weight": 10000
 	},
 	"locomotive_vu": {
@@ -19,7 +19,7 @@
 			"resources/tr_wagons/27_zi4.png"
 		],
 		"dimensions": [136, 68],
-		"offsety": 10,
+		"offsety": [15,15,15],
 		"capacity": 1000,
 		"units": "tons",
 		"cargo": "Wood",
@@ -28,7 +28,7 @@
 	"Tender": {
 		"files": ["resources/tr_wagons/trn_tender_tr.png"],
 		"dimensions": [64, 44],
-		"offsety": 20,
+		"offsety": [10],
 		"capacity": 1000,
 		"units": "ton",
 		"cargo": "coal",
@@ -46,7 +46,7 @@
 	"Livestock": {
 		"files": ["resources/tr_wagons/trn_livestock_tr.png"],
 		"dimensions": [128, 52],
-		"offsety": 15,
+		"offsety": [15],
 		"capacity": 3,
 		"units": "",
 		"cargo": "Livestock",
@@ -64,7 +64,7 @@
 	"Cannon": {
 		"files": ["resources/tr_wagons/trn_cannon_tr.png"],
 		"dimensions": [128, 58],
-		"offsety": 8,
+		"offsety": [15],
 		"capacity": 50,
 		"units": "cannonballs",
 		"cargo": "cannonballs",
@@ -145,9 +145,13 @@
 		"offsety": 10
 	},
 	"Oil": {
-		"files": ["resources/tr_wagons/18502_zi4.png"],
+		"files": [
+			"resources/tr_wagons/18502_zi4.png",
+			"resources/tr_wagons/18502_zi4.png",
+			"resources/tr_wagons/18502_zi4.png"
+		],
 		"dimensions": [208, 68],
-		"offsety": 10,
+		"offsety": [10,10,10],
 		"capacity": 1000,
 		"units": "L",
 		"cargo": "Oil",
@@ -163,7 +167,7 @@
 		"dimensions": [208, 68],
 		"offsety": 10
 	},
-	"Iron": {
+	"Iron2": {
 		"files": ["resources/tr_wagons/788_zi4.png"],
 		"dimensions": [180, 68],
 		"offsety": 16,
@@ -172,12 +176,17 @@
 		"cargo": "Iron",
 		"weight": 1000
 	},
-	"Iron2": {
-		"files": ["resources/tr_wagons/183_zi4.png"],
+	"Iron": {
+		"files": [
+			"resources/tr_wagons/183_zi4.png",
+			"resources/tr_wagons/187_zi4.png",
+			"resources/tr_wagons/195_zi4.png"
+		],
+		"name": "Iron Wagon",
 		"dimensions": [136, 68],
-		"offsety": 10,
+		"offsety": [10,10,10],
 		"capacity": 1500,
-		"units": "Tons",
+		"units": "tons",
 		"cargo": "Iron",
 		"weight": 1000
 	},
@@ -220,5 +229,19 @@
 		"files": ["resources/tr_wagons/291_zi4.png"],
 		"dimensions": [136, 52],
 		"offsety": 8
+	},
+	"Container": {
+		"files": [
+			"resources/tr_wagons/13555_zi4.png",
+			"resources/tr_wagons/13563_zi4.png",
+			"resources/tr_wagons/13571_zi4.png"
+		],
+		"name": "Container Wagon",
+		"dimensions": [299, 68],
+		"offsety": [0,12,12],
+		"capacity": 4,
+		"units": "containers",
+		"cargo": "Container",
+		"weight": 1000
 	}
 }
