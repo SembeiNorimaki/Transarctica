@@ -85,7 +85,8 @@ function preload() {
 
   tileChangesData = loadJSON("tileChanges.json");
 
-  mapData = loadStrings('transarctica_rails.txt');
+  //mapData = loadStrings('transarctica_rails.txt');
+  mapData = loadStrings('map_small.txt');
 
   loadJSON("resources/locomotive/sprites.json", jsonData => {
     for (const [key, val] of Object.entries(jsonData)) {
@@ -188,10 +189,10 @@ function setup() {
   
   hud = new Hud(hudData);
   worldMap = new WorldMap(mapData, tracksData, buildingsData, citiesData, industryData);
-  let aux = worldMap.map2screen(9, 64, 2);
+  let aux = worldMap.map2screen(5, 12, 2);
   cameraPos.set(aux.x, aux.y, 2);
 
-  locomotive = new Locomotive(createVector(9, 64), 90.0, trWagonData); 
+  locomotive = new Locomotive(createVector(5, 12), 270.0, trWagonData); 
   locomotive.addWagon("Locomotive");
   locomotive.addWagon("Tender");
   locomotive.addWagon("Cannon");
@@ -202,9 +203,9 @@ function setup() {
   locomotive.addWagon("Container");
   
 
-  //currentScene = "Navigation";
-  currentScene = "CityTrade";
-  currentCity = new ScnCityTrade(citiesData[65], industryData, roadsData, buildingsData, backgroundImg);
+  currentScene = "Navigation";
+  // currentScene = "CityTrade";
+  // currentCity = new ScnCityTrade(citiesData[65], industryData, roadsData, buildingsData, backgroundImg);
 
   // currentScene = "Combat";
   // currentCity = new ScnCombat(combatImg);

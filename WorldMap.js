@@ -31,6 +31,32 @@ function WorldMap(data, tracks, buildings, cities, industries) {
     "tCD": 0x19,
     "tAC": 0x1A,
     "tBD": 0x1B,
+
+    "t1": 0x30,
+    "t2": 0x31,
+    "t3": 0x32,
+    "t4": 0x33,
+    "t5": 0x34,
+    "t6": 0x35,
+    "t7": 0x36,
+    "t8": 0x37,
+    "t9": 0x38,
+    "t10": 0x39,
+    "t11": 0x3A,
+    "t12": 0x3B,
+    "t13": 0x3C,
+    "t14": 0x3D,
+    "t15": 0x3E,
+    "t16": 0x3F,
+    "t17": 0x40,
+    "t18": 0x41,
+    "t19": 0x2F,
+
+    "tA": 0x2B,
+    "tB": 0x2C,
+    "tC": 0x2D,
+    "tD": 0x2E,
+
     "sAD": 0x80,
     "sBC": 0x81,
     "sBC2": 0x82,
@@ -66,6 +92,32 @@ function WorldMap(data, tracks, buildings, cities, industries) {
     0x19: "tCD",
     0x1A: "tAC",
     0x1B: "tBD",
+
+    0x30: "t1",
+    0x31: "t2",
+    0x32: "t3",
+    0x33: "t4",
+    0x34: "t5",
+    0x35: "t6",
+    0x36: "t7",
+    0x37: "t8",
+    0x38: "t9",
+    0x39: "t10",
+    0x3A: "t11",
+    0x3B: "t12",
+    0x3C: "t13",
+    0x3D: "t14",
+    0x3E: "t15",
+    0x3F: "t16",
+    0x40: "t17",
+    0x41: "t18",
+    0x2F: "t19",
+
+    0x2B: "tA",
+    0x2C: "tB",
+    0x2D: "tC",
+    0x2E: "tD",
+
     0x80: "sAD",
     0x81: "sBC",
     0x82: "sBC1",
@@ -189,11 +241,15 @@ function WorldMap(data, tracks, buildings, cities, industries) {
       } else if (this.board[row][col] >= 0x40) {    // stations AD
         canvas.image(this.tracks["0"].img, screenPos.x, screenPos.y);
         canvas.image(this.buildings[(this.board[row][col]-0x40).toString()].img, screenPos.x-28, screenPos.y-15); 
+      } else if ([0x31, 0x32, 0x35, 0x37, 0x38, 0x3B, 0x2D].includes(this.board[row][col])) {
+        canvas.image(this.tracks[this.tileIdx2name[this.board[row][col]]].img, screenPos.x, screenPos.y-16);
+      } else if (this.board[row][col] == 0x2F) {
+        canvas.image(this.tracks[this.tileIdx2name[this.board[row][col]]].img, screenPos.x, screenPos.y-32);
       } else {
         canvas.image(this.tracks[this.tileIdx2name[this.board[row][col]]].img, screenPos.x, screenPos.y);
       }
     } catch (error) {
-      //console.log(row, col)
+      console.log(error)
       return;
 
       // if (this.board[row][col] >= 0x40 && this.board[row][col] <=0x6B) {

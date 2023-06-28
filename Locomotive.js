@@ -93,6 +93,7 @@ function Locomotive(pos, orientation, wagonsData) {
       xpos -= wagon.halfSize[0];
       wagon.showHorizontal(canvas, createVector(xpos, ypos));
       canvas.circle(xpos, ypos,5)
+      
       xpos -= wagon.halfSize[0]+10;
     }
   }
