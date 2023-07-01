@@ -8,17 +8,27 @@
             "Iron": 100,
             "Oil": 50,
             "Container": 200
+        },
+        "needs": {
+            "Iron": 100,
+            "Oil": 50,
+            "Container": 200
         }
     },
     "65": {
         "name": "Marrakesh",
-        "industry": "Oil",
+        "industry": "Container",
         "sellPrice": 30,
         "availableQty": 5000,
         "goods": {
             "Iron": 20,
             "Oil": 10,
             "Container": 100
+        },
+        "needs": {
+            "Iron": 100,
+            "Oil": 50,
+            "Container": 200
         }
     }
 }

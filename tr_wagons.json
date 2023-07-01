@@ -1,6 +1,6 @@
 {
 	"Locomotive": {
-		"files": ["resources/tr_wagons/trn_locomotive_tr.png"],
+		"files": ["resources/tr_wagons/trn_locomotive_tr.png","resources/tr_wagons/1711_zi4.png","resources/tr_wagons/2429_zi4.png","resources/tr_wagons/2437_zi4.png"],
 		"dimensions": [256, 66],
 		"offsety": [20],
 		"weight": 10000

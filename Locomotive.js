@@ -142,11 +142,19 @@ function Locomotive(pos, orientation, wagonsData) {
       this.update(worldMap);
     }
   }
-
+  
   this.checkFrontSensor = (worldMap) => {
     let deltaX = this.currentTileFrontSensor.x - this.currentTile.x;
     let deltaY = this.currentTileFrontSensor.y - this.currentTile.y;
-    let tileName = worldMap.tileIdx2name[worldMap.board[this.currentTileFrontSensor.y][this.currentTileFrontSensor.x]];
+    
+    try {
+      tileName = worldMap.tileIdx2name[worldMap.board[this.currentTileFrontSensor.y][this.currentTileFrontSensor.x]];
+    } catch {
+      console.log("dsdfsdf")
+      this.stop();
+      this.velocity.setMag(0.0);
+      return;
+    }
 
     if ((deltaX == 1 && !tileName.includes("A")) ||
         (deltaX == -1 && !tileName.includes("D")) ||
@@ -167,7 +175,7 @@ function Locomotive(pos, orientation, wagonsData) {
     //   return;
     // }
 
-    console.log(this.currentTile.x, this.currentTile.y,worldMap.map2idx(createVector(this.currentTile.x, this.currentTile.y)))
+    //console.log(this.currentTile.x, this.currentTile.y,worldMap.map2idx(createVector(this.currentTile.x, this.currentTile.y)))
     switch(worldMap.tileIdx2name[worldMap.board[this.currentTile.y][this.currentTile.x]]) {
       case("AB"):
       case("ABc"):

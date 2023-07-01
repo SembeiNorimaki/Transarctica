@@ -40,8 +40,9 @@ let currentScene;
 //let scenes = ("Navigation", "CityTrade", "WagonTrade", "Combat");
 
 let events = {
-  8965: 64, // Taoudeni
-  10569: 65 // Marrakesh
+  "13,16": 11,  // mine  
+  "9,22": 64,   // Taoudeni
+  "5,10": 65    // Marrakesh
   
 };
 
@@ -131,7 +132,7 @@ function initialize() {
   }
 
   mouseRightPressedPos = createVector(0, 0);
-  cameraPos = createVector(0, 0, 0);
+  cameraPos = createVector(0, 0);
 
   hudCanvas.imageMode(CENTER);
   hudCanvas.textAlign(CENTER, CENTER);
@@ -158,12 +159,12 @@ function initialize() {
   for (let i=-1;i<15;i++) {
     if (i%2) {
       backgroundImg.image(tracksData["H1"].img, i*128, 825);
-      backgroundImg.image(tracksData["H1"].img, i*128, 825-90);
+      // backgroundImg.image(tracksData["H1"].img, i*128, 825-90);
       combatImg.image(tracksData["H1"].img, i*128, 825);
     }
     else {
       backgroundImg.image(tracksData["H2"].img, i*128, 825);
-      backgroundImg.image(tracksData["H2"].img, i*128, 825-90);
+      // backgroundImg.image(tracksData["H2"].img, i*128, 825-90);
       combatImg.image(tracksData["H2"].img, i*128, 825);
     }
   }
@@ -181,16 +182,17 @@ function initialize() {
 }
 
 function setup() {  
-  createCanvas(1900, 900);
-  mainCanvas = createGraphics(1900, 840);
+  // noLoop();
+  createCanvas(1900, 1060);
+  mainCanvas = createGraphics(1900, 1000);
   hudCanvas = createGraphics(1900, 60);  
   initialize();  
   background(100)
   
   hud = new Hud(hudData);
   worldMap = new WorldMap(mapData, tracksData, buildingsData, citiesData, industryData);
-  let aux = worldMap.map2screen(5, 12, 2);
-  cameraPos.set(aux.x, aux.y, 2);
+  let aux = worldMap.map2screen(5, 12);
+  cameraPos.set(aux.x, aux.y);
 
   locomotive = new Locomotive(createVector(5, 12), 270.0, trWagonData); 
   locomotive.addWagon("Locomotive");
@@ -203,9 +205,9 @@ function setup() {
   locomotive.addWagon("Container");
   
 
-  currentScene = "Navigation";
-  // currentScene = "CityTrade";
-  // currentCity = new ScnCityTrade(citiesData[65], industryData, roadsData, buildingsData, backgroundImg);
+  // currentScene = "Navigation";
+  currentScene = "CityTrade";
+  currentCity = new ScnCityTrade(citiesData[65], industryData, roadsData, buildingsData, backgroundImg);
 
   // currentScene = "Combat";
   // currentCity = new ScnCombat(combatImg);
@@ -241,35 +243,38 @@ function redrawMap() {
 function draw() {  
   hud.tick();
   hud.update(locomotive.gear, locomotive.gold, round(locomotive.fuel), round(locomotive.velocity.mag()*10000));
+  
   switch(currentScene) {
     case("Navigation"):
       locomotive.update(worldMap);
-      //worldMap.drawTile(mainCanvas, locomotive.currentTile.y, locomotive.currentTile.x);
-      if (locomotive.orientation == 90 || locomotive.orientation == 270) {
-        worldMap.drawTile(mainCanvas, locomotive.currentTile.y-1, locomotive.currentTile.x);
-        worldMap.drawTile(mainCanvas, locomotive.currentTile.y, locomotive.currentTile.x);
-        worldMap.drawTile(mainCanvas, locomotive.currentTile.y+1, locomotive.currentTile.x);
-      } else if (locomotive.orientation == 0 || locomotive.orientation == 180) {
-        worldMap.drawTile(mainCanvas, locomotive.currentTile.y, locomotive.currentTile.x+1);
-        worldMap.drawTile(mainCanvas, locomotive.currentTile.y, locomotive.currentTile.x);
-        worldMap.drawTile(mainCanvas, locomotive.currentTile.y, locomotive.currentTile.x-1);
-      } else {
-        worldMap.drawTile(mainCanvas, locomotive.currentTile.y, locomotive.currentTile.x+1);
-        worldMap.drawTile(mainCanvas, locomotive.currentTile.y, locomotive.currentTile.x-1);
-        worldMap.drawTile(mainCanvas, locomotive.currentTile.y, locomotive.currentTile.x);
-        worldMap.drawTile(mainCanvas, locomotive.currentTile.y+1, locomotive.currentTile.x);
-        worldMap.drawTile(mainCanvas, locomotive.currentTile.y-1, locomotive.currentTile.x);
-      }
+      //let aux = worldMap.map2screen(locomotive.position.x, locomotive.position.y, 2);
+      //cameraPos.set(aux.x, aux.y)
+      // if (locomotive.orientation == 90 || locomotive.orientation == 270) {
+      //   worldMap.drawTile(mainCanvas, locomotive.currentTile.y-1, locomotive.currentTile.x);
+      //   worldMap.drawTile(mainCanvas, locomotive.currentTile.y, locomotive.currentTile.x);
+      //   worldMap.drawTile(mainCanvas, locomotive.currentTile.y+1, locomotive.currentTile.x);
+      // } else if (locomotive.orientation == 0 || locomotive.orientation == 180) {
+      //   worldMap.drawTile(mainCanvas, locomotive.currentTile.y, locomotive.currentTile.x+1);
+      //   worldMap.drawTile(mainCanvas, locomotive.currentTile.y, locomotive.currentTile.x);
+      //   worldMap.drawTile(mainCanvas, locomotive.currentTile.y, locomotive.currentTile.x-1);
+      // } else {
+      //   worldMap.drawTile(mainCanvas, locomotive.currentTile.y, locomotive.currentTile.x+1);
+      //   worldMap.drawTile(mainCanvas, locomotive.currentTile.y, locomotive.currentTile.x-1);
+      //   worldMap.drawTile(mainCanvas, locomotive.currentTile.y, locomotive.currentTile.x);
+      //   worldMap.drawTile(mainCanvas, locomotive.currentTile.y+1, locomotive.currentTile.x);
+      //   worldMap.drawTile(mainCanvas, locomotive.currentTile.y-1, locomotive.currentTile.x);
+      // }
       
-
       if (locomotive.enteredNewTile()) {
         locomotive.newOrientation(worldMap);
-        let tileIdx = worldMap.map2idx(locomotive.currentTile);
-        if (tileIdx in events) {
+        //let tileIdx = worldMap.map2idx(locomotive.currentTile);
+        let tileString = String(locomotive.currentTile.x) + "," + String(locomotive.currentTile.y);
+        
+        if (tileString in events) {
           console.log("Arrived to a city");
-          locomotive.stop();          
-          currentCity = new ScnCityTrade(citiesData[events[tileIdx]], industryData, roadsData, buildingsData, backgroundImg);
-          currentScene = "CityTrade";
+          //locomotive.stop();          
+          //currentCity = new ScnCityTrade(citiesData[events[tileIdx]], industryData, roadsData, buildingsData, backgroundImg);
+          //currentScene = "CityTrade";
         }
       }
       worldMap.show(mainCanvas, cameraPos);
@@ -351,6 +356,7 @@ function keyPressed() {
       if (keyCode == SHIFT) {
         locomotive.turn180(worldMap);
       }
+    break;
     case("CityTrade"):
       currentCity.processKey(keyCode);
     break;

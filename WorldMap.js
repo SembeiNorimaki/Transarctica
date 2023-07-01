@@ -1,6 +1,6 @@
 function WorldMap(data, tracks, buildings, cities, industries) {
-  const TILE_WIDTH_HALF = [32, 64, 128];
-  const TILE_HEIGHT_HALF = [16, 32, 64];
+  const TILE_WIDTH_HALF = 128;
+  const TILE_HEIGHT_HALF = 64;
 
   this.tileName2idx = {
     "0": 0x00,
@@ -162,36 +162,36 @@ function WorldMap(data, tracks, buildings, cities, industries) {
     }
   }
 
-  this.preloadMap = () => {   
-    for(let row=0; row<this.NROWS; row++) {
-      for(let col=0; col<this.NCOLS; col++) {
-        for (let zoom=0; zoom<=0; zoom++) {
-          screenPos = this.map2screen(col, row, zoom);
-          screenPos.add(createVector(this.NROWS * TILE_WIDTH_HALF[zoom], 0))
-          try {  
-            this.fullImage[zoom].image(this.tracks[this.tileIdx2name[this.board[row][col]]].img, 
-              screenPos.x, 
-              screenPos.y);
-          } catch (error) {
-            console.log(error);
-          }
-        }
-      }
-    }
-    //image(this.fullImage[1],-width/2,-height/2)   
-  }
+  // this.preloadMap = () => {   
+  //   for(let row=0; row<this.NROWS; row++) {
+  //     for(let col=0; col<this.NCOLS; col++) {
+  //       for (let zoom=0; zoom<=0; zoom++) {
+  //         screenPos = this.map2screen(col, row, zoom);
+  //         screenPos.add(createVector(this.NROWS * TILE_WIDTH_HALF[zoom], 0))
+  //         try {  
+  //           this.fullImage[zoom].image(this.tracks[this.tileIdx2name[this.board[row][col]]].img, 
+  //             screenPos.x, 
+  //             screenPos.y);
+  //         } catch (error) {
+  //           console.log(error);
+  //         }
+  //       }
+  //     }
+  //   }
+  //   //image(this.fullImage[1],-width/2,-height/2)   
+  // }
 
-  this.screen2map = (screenX, screenY, zoom) => {
+  this.screen2map = (screenX, screenY) => {
     return createVector(
-      (screenX / TILE_WIDTH_HALF[zoom] + screenY / TILE_HEIGHT_HALF[zoom]) / 2, 
-      (screenY / TILE_HEIGHT_HALF[zoom] - screenX / TILE_WIDTH_HALF[zoom]) / 2
+      (screenX / TILE_WIDTH_HALF + screenY / TILE_HEIGHT_HALF) / 2, 
+      (screenY / TILE_HEIGHT_HALF - screenX / TILE_WIDTH_HALF) / 2
     );
   }
   
-  this.map2screen = (x, y, cameraPos) => {
+  this.map2screen = (x, y) => {
     return createVector(
-      (x - y) * TILE_WIDTH_HALF[2],
-      (x + y) * TILE_HEIGHT_HALF[2]
+      (x - y) * TILE_WIDTH_HALF,
+      (x + y) * TILE_HEIGHT_HALF
     );
   }
   
@@ -215,19 +215,23 @@ function WorldMap(data, tracks, buildings, cities, industries) {
     
   }
 
-  this.drawTile = (canvas, row, col) => {
-    screenPos = this.map2screen(col, row, cameraPos.z);
+  this.drawTile = (canvas, row, col, cameraPos) => {
+    screenPos = this.map2screen(col, row);
     screenPos.sub(cameraPos);
     screenPos.add(950, 420);
-    if (screenPos.x < -TILE_WIDTH_HALF[cameraPos.z] ||
-        screenPos.y < -TILE_HEIGHT_HALF[cameraPos.z] || 
-        screenPos.x > canvas.width + TILE_WIDTH_HALF[cameraPos.z]|| 
-        screenPos.y > canvas.height + TILE_HEIGHT_HALF[cameraPos.z]) {
+    if (screenPos.x < -TILE_WIDTH_HALF ||
+        screenPos.y < -TILE_HEIGHT_HALF || 
+        screenPos.x > canvas.width + TILE_WIDTH_HALF || 
+        screenPos.y > canvas.height + TILE_HEIGHT_HALF) {
       return;
     }
 
     try {  
-      if (this.board[row][col] == 0x81) {  // stations BC
+      if (this.board[row][col] == 0x90) {
+        canvas.image(this.tracks["0"].img, screenPos.x, screenPos.y);
+        canvas.image(this.tracks["tree"].img, screenPos.x, screenPos.y-30);
+        
+      } else if (this.board[row][col] == 0x81) {  // stations BC
         canvas.image(this.tracks["0"].img, screenPos.x, screenPos.y);
         //canvas.image(this.tracks["sBC1"].img, screenPos.x-25, screenPos.y-56);
         canvas.image(this.tracks["sBC1"].img, screenPos.x+40, screenPos.y-22);
@@ -249,33 +253,63 @@ function WorldMap(data, tracks, buildings, cities, industries) {
         canvas.image(this.tracks[this.tileIdx2name[this.board[row][col]]].img, screenPos.x, screenPos.y);
       }
     } catch (error) {
-      console.log(error)
+      //console.log(error)
       return;
-
-      // if (this.board[row][col] >= 0x40 && this.board[row][col] <=0x6B) {
-      //   canvas.image(this.tracks[this.tileIdx2name[0]].img,
-      //     screenPos.x, 
-      //     screenPos.y,
-      //     2*TILE_WIDTH_HALF[cameraPos.z], 2*TILE_HEIGHT_HALF[cameraPos.z]);
-      //   canvas.image(this.buildings["7"].img,
-      //     screenPos.x,
-      //     screenPos.y-90);
-      // }
     }
+
+    //canvas.text(`${col}, ${row}`, screenPos.x, screenPos.y)
   }
 
   this.show = (canvas, cameraPos) => {
-    for(let row=0; row<this.NROWS; row++) {
-      for(let col=0; col<this.NCOLS; col++) {
-        this.drawTile(canvas, row, col);
+    // for(let row=0; row<this.NROWS; row++) {
+    //   for(let col=0; col<this.NCOLS; col++) {
+    //     this.drawTile(canvas, row, col, cameraPos);
+    //   }
+    // }
+
+    let aux = this.screen2map(cameraPos.x, cameraPos.y)
+    let xx = 8;
+    let yy = 8;
+    for(let row=aux.y-yy; row<=aux.y+yy; row++) {
+      for(let col=aux.x-xx; col<=aux.x+xx; col++) {
+        this.drawTile(canvas, int(row), int(col), cameraPos);
       }
     }
+
+    // let aux = this.screen2map(cameraPos.x, cameraPos.y)
+    // let idx = 0;
+    // for (let x=0; x<6; x++) {
+    //   for (let y=0; y<7; y++) {  //
+    //     let aux2 = this.map2screen(int(aux.x - x+y), int(aux.y+6-y-x))
+    //     aux2.sub(cameraPos);
+    //     aux2.add(950, 420);
+    //     this.drawTile(canvas, int(aux.x - x+y), int(aux.y+6-y-x), cameraPos);
+    //     // canvas.image(this.tracks["0"].img, aux2.x, aux2.y)
+    //     canvas.text(`${int(aux.x - x+y)}, ${int(aux.y+6-y-x)}`, aux2.x, aux2.y);
+    //     idx +=1
+    //   }
+    //   for (let y=0; y<7; y++) {  //
+    //     let aux2 = this.map2screen(int(aux.x-1 - x+y), int(aux.y+6-y-x))
+    //     aux2.sub(cameraPos);
+    //     aux2.add(950, 420);
+    //     this.drawTile(canvas, int(aux.x-1 - x+y), int(aux.y+6-y-x), cameraPos);
+    //     // canvas.image(this.tracks["0"].img, aux2.x, aux2.y)
+    //     // canvas.text(idx, aux2.x, aux2.y);
+    //     idx +=1
+    //   }
+      
+    // }
+
+
+    // canvas.stroke(255,0,0)
+    // canvas.line(0, canvas.height/2, canvas.width, canvas.height/2)
+    // canvas.line(canvas.width/2, 0, canvas.width/2, canvas.height);
   }
 
   this.processClick = (mouseX, mouseY, cameraPos) => {
     
     let aux = this.screen2map(mouseX+cameraPos.x, mouseY+cameraPos.y, cameraPos.z);
-    console.log(aux.array())
+    console.log(round(aux.x), round(aux.y))
     //console.log(this.cities[Number(this.board[round(aux.y)][round(aux.x)])])
     
     this.changeTile(round(aux.y), round(aux.x))

@@ -50,7 +50,7 @@ function Wagon(id, name, wagonData) {
 
   this.showHorizontal = (canvas, pos) => {
     canvas.image(this.img[this.spriteId], pos.x, pos.y - this.offsety[this.spriteId]);
-    canvas.rect(pos.x, pos.y+20, this.halfSize[0]*2, 3);
+    //canvas.rect(pos.x, pos.y+20, this.halfSize[0]*2, 3);
     canvas.textAlign(CENTER, CENTER);
     canvas.text(`${this.usedSpace} / ${this.capacity}`, pos.x, pos.y + 30);   
     canvas.textAlign(LEFT);  
