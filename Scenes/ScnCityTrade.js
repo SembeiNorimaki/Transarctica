@@ -69,7 +69,7 @@ function ScnCityTrade(cityData, industryData, roadsData, buildingsData, backgrou
   }
   
   this.update = (train) => {
-    if (this.enterSequence && this.trainXpos > 1370) {
+    if (this.enterSequence && this.trainXpos > 1100) {
       if (this.vel > 0)
         this.acc = -0.1;
       else {
@@ -98,7 +98,7 @@ function ScnCityTrade(cityData, industryData, roadsData, buildingsData, backgrou
   }
 
   this.processClick = (x, y, train) => {
-    console.log(`Clicked: ${x}, ${y}`);
+    console.log(`Clicked: ${round(x)}, ${round(y)}`);
 
     let xmin, xmax;
     // traffic light
@@ -110,17 +110,10 @@ function ScnCityTrade(cityData, industryData, roadsData, buildingsData, backgrou
         this.exitSequence = true;
       } 
     // train region
-    } else if (y > 750 && y < 805) {  
-      xmin = this.trainXpos;
-      for(let i=1; i<train.wagons.length; i++) {
-        xmax = xmin;
-        xmin -= train.wagons[i].halfSize[0]*2;  
-        if (x < xmax && x > xmin) {
-        //if (x < this.trainXpos - 128*i && x > this.trainXpos - 128*(i+1)) {
-          console.log("clicked wagon", i);
-          this.selectedWagon = i;
-        }
-      }
+    } else if (y > 750 && y < 805) {
+      let idx = train.clickHorizontalTrain(this.trainXpos, x, y);
+      this.selectedWagon = idx;
+
     } else if (this.industry.isClicked(x, y)) {
         console.log("Farm clicked");
         this.selectedObject = this.industry;
@@ -188,8 +181,8 @@ function ScnCityTrade(cityData, industryData, roadsData, buildingsData, backgrou
     canvas.fill(0);
 
     if (this.selectedObjectType == "wagon") {
-      this.selectedObject.showHorizontal(canvas, createVector(canvas.width-200, 90));
-      canvas.text(`Name: ${this.selectedObject.resourceName}`, canvas.width-380, texty);
+      this.selectedObject.showHorizontal2(canvas, createVector(canvas.width-200-this.selectedObject.halfSize[0], 90));
+      canvas.text(`Name: ${this.selectedObject.name}`, canvas.width-380, texty);
       texty += 50;
       //canvas.text(`Capacity: ${this.selectedObject.capacity} ${this.selectedObject.units}`, width-380, 250);  
       //canvas.text(`Tare Weight: ${this.selectedObject.weight} tons`, width-380, 300);
@@ -199,7 +192,7 @@ function ScnCityTrade(cityData, industryData, roadsData, buildingsData, backgrou
       texty += 50;
       this.activeButtons = [this.buttons.sell, this.buttons.close];
     } else if (this.selectedObjectType == "industry") {
-      canvas.image(this.selectedObject.img, width-200, 100, this.selectedObject.img.width/3, this.selectedObject.img.height/3);
+      canvas.image(this.selectedObject.img, width-200, 120, this.selectedObject.img.width/3, this.selectedObject.img.height/3);
       canvas.textAlign(CENTER, CENTER);
       //canvas.textSize(26)
       canvas.text(`${this.selectedObject.industryName}`,width-200, texty);

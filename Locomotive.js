@@ -15,7 +15,7 @@ function Locomotive(pos, orientation, wagonsData) {
 
   this.currentTileFrontSensor = createVector(round(this.frontSensor.x), round(this.frontSensor.y));
   
-  this.acceleration = createVector(0.001, 0).setHeading(radians(this.orientation));
+  this.acceleration = createVector(0.0002, 0).setHeading(radians(this.orientation));
   this.braking = createVector(0.001, 0);  
   this.velocity = createVector(0.0, 0.0);
   this.spriteIdx = 0;
@@ -88,14 +88,33 @@ function Locomotive(pos, orientation, wagonsData) {
   }
 
   this.showHorizontalTrain = (canvas, xpos) => {
-    let ypos = 800; 
-    for (let wagon of this.wagons) {
-      xpos -= wagon.halfSize[0];
-      wagon.showHorizontal(canvas, createVector(xpos, ypos));
-      canvas.circle(xpos, ypos,5)
+    let ypos = 800;
+    this.wagons[0].setPos(createVector(xpos, ypos));
+    this.wagons[0].showHorizontal(canvas);
       
-      xpos -= wagon.halfSize[0]+10;
+    for (let i=1; i<this.wagons.length; i++) {
+      xpos -= this.wagons[i].halfSize[0]*2+5;
+      this.wagons[i].setPos(createVector(xpos, ypos));
+      this.wagons[i].showHorizontal(canvas);
+      canvas.textAlign(CENTER, CENTER);
+      canvas.text(`${this.wagons[i].usedSpace} / ${this.wagons[i].capacity}`, xpos+this.wagons[i].halfSize[0], ypos + 30);   
+      canvas.textAlign(LEFT);
     }
+  }
+
+  this.clickHorizontalTrain = (currentX, x, y) => {
+    let idx = 0;
+    if (x > currentX) { 
+      return idx;
+    }
+    for (let i=1; i<this.wagons.length; i++) {
+      idx +=1;
+      currentX -= (this.wagons[i].halfSize[0]*2+5);
+      if (x > currentX) { 
+        return idx;
+      }      
+    }
+    return -1;
   }
 
   this.show = (canvas, cameraPos, imgData, worldMap) => {    

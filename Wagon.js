@@ -13,11 +13,15 @@ function Wagon(id, name, wagonData) {
   this.spriteId = 0;
   this.hitpointsLeft = 50;
   this.hitpoints = 150;
-
+  this.pos = createVector(0, 800);
   this.vel = createVector(0.0, 0.0);
   
   this.setVel = (newVel) => {
     this.vel.set(newVel);
+  }
+
+  this.setPos = (newPos) => {
+    this.pos.set(newPos);
   }
 
   this.recalculateSpriteId = () => {
@@ -48,12 +52,21 @@ function Wagon(id, name, wagonData) {
     this.recalculateSpriteId(); 
   }
 
-  this.showHorizontal = (canvas, pos) => {
+  this.showHorizontal = (canvas) => {
+    this.showHorizontal2(canvas, this.pos)
+    // canvas.imageMode(CORNER)
+    // canvas.image(this.img[this.spriteId], this.pos.x, this.pos.y - this.offsety[this.spriteId]);
+    // //canvas.rect(pos.x, pos.y+20, this.halfSize[0]*2, 3);
+    // canvas.textAlign(CENTER, CENTER);
+    // canvas.text(`${this.usedSpace} / ${this.capacity}`, this.pos.x, this.pos.y + 30);   
+    // canvas.textAlign(LEFT);
+    // canvas.imageMode(CENTER)  
+  }
+
+  this.showHorizontal2 = (canvas, pos) => {
+    canvas.imageMode(CORNER)
     canvas.image(this.img[this.spriteId], pos.x, pos.y - this.offsety[this.spriteId]);
-    //canvas.rect(pos.x, pos.y+20, this.halfSize[0]*2, 3);
-    canvas.textAlign(CENTER, CENTER);
-    canvas.text(`${this.usedSpace} / ${this.capacity}`, pos.x, pos.y + 30);   
-    canvas.textAlign(LEFT);  
+    canvas.imageMode(CENTER)  
   }
 
   this.update = () => {  

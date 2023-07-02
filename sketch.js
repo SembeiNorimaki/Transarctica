@@ -1,42 +1,34 @@
 let prevMouseX, prevMouseY, mouseRightPressed, mouseRightPressedPos;
 let cameraPos;
 
-let locomotive;
-let allWagons = [];
 
+// data from json files
 let locomotiveData = {};
-let wagonData = {};
 let mapData;
 let tracksData = {};
 let roadsData = {};
 let buildingsData = {};
 let citiesData = {};
 let hudData = {};
-
 let trWagonData = {};
+let industryData = {};
+let miscData = {};
 let tileChangesData;
 
+
+let locomotive;
 let worldMap;
-let worldMapObjects = {};
-let NCOLS, NROWS;
 
 let mainCanvas, hudCanvas;
-
 let hud;
 
 let currentTime = new Date(1549312452 * 1000);
-
-let currentCity;
-
-let ts;
-let fullImage;
-
-let industryData = {};
+let currentCity, currentScene;
 
 
 let backgroundImg, combatImg;
 
-let currentScene;
+
 //let scenes = ("Navigation", "CityTrade", "WagonTrade", "Combat");
 
 let events = {
@@ -47,16 +39,20 @@ let events = {
 };
 
 function preload() {
-  citiesData = loadJSON("cities.json");
+  loadJSON("allResources.json", jsonData => {
 
-  loadJSON("hud.json", jsonData => {    
-    for (const [key, val] of Object.entries(jsonData)) {
+    citiesData = jsonData.cities;
+    miscData.comrad = loadImage('resources/comrad.png');
+    tileChangesData = jsonData.tileChanges;
+    mapData = loadStrings('map_small.txt');
+
+    // - HUD
+    for (const [key, val] of Object.entries(jsonData.hud)) {
       hudData[key] = loadImage(`resources/hud/${val}`);
     }
-  });
 
-  loadJSON("industries.json", jsonData => {    
-    for (const [key, val] of Object.entries(jsonData)) {
+    // - Industries
+    for (const [key, val] of Object.entries(jsonData.industries)) {
       industryData[key] = val;
       industryData[key].img = loadImage(`resources/industries/${val.file}`);
       industryData[key].imgs = [];
@@ -64,33 +60,24 @@ function preload() {
         industryData[key].imgs.push(loadImage(`resources/industries/${aux}`));
       }
     }
-  });
 
-  loadJSON("tracks.json", jsonData => {    
-    for (const [key, val] of Object.entries(jsonData)) {
+    // - Tracks
+    for (const [key, val] of Object.entries(jsonData.tracks)) {
       tracksData[key] = {"img": loadImage(`resources/tracks/${val}_zi4.png`)};
     }
-  });
-
-  loadJSON("roads.json", jsonData => {    
-    for (const [key, val] of Object.entries(jsonData)) {
+  
+    // - Roads
+    for (const [key, val] of Object.entries(jsonData.roads)) {
       roadsData[key] = {"img": loadImage(`resources/roads/${val}_zi4.png`)};
     }
-  });
 
-  loadJSON("buildings.json", jsonData => {    
-    for (const [key, val] of Object.entries(jsonData)) {
+    // - Buildings
+    for (const [key, val] of Object.entries(jsonData.buildings)) {
       buildingsData[key] = {"img": loadImage(`resources/buildings/${val}_zi4.png`)};
     }
-  });
-
-  tileChangesData = loadJSON("tileChanges.json");
-
-  //mapData = loadStrings('transarctica_rails.txt');
-  mapData = loadStrings('map_small.txt');
-
-  loadJSON("resources/locomotive/sprites.json", jsonData => {
-    for (const [key, val] of Object.entries(jsonData)) {
+    
+    // - Locomotive
+    for (const [key, val] of Object.entries(jsonData.locomotive)) {
       locomotiveData[key] = {
         "imgList": [],
         "offset": val.offset
@@ -99,53 +86,21 @@ function preload() {
         locomotiveData[key].imgList.push(loadImage("resources/locomotive/" + filename));
       }
     }
-  });
 
-  loadJSON("resources/wagons/sprites.json", jsonData => {
-    for (const [key, val] of Object.entries(jsonData)) {
-      wagonData[key] = {
-        "imgList": [],
-        "offset": val.offset
-      };
-      for (let filename of val.fileList) {
-        wagonData[key].imgList.push(loadImage("resources/wagons/" + filename));
-      }
-    }
-  });
-
-  loadJSON("tr_wagons.json", jsonData => {
-    trWagonData = jsonData;
-    for (const [key, val] of Object.entries(jsonData)) {      
+    // - Wagons
+    trWagonData = jsonData.wagons;
+    for (const [key, val] of Object.entries(jsonData.wagons)) {
       trWagonData[key] = val;
       trWagonData[key].img = [];
       for (let filename of val.files) {
         trWagonData[key].img.push(loadImage(filename));
       }
     }
+
   });
 }
 
-function initialize() {
-  // disable right click menu
-  for (let element of document.getElementsByClassName("p5Canvas")) {
-    element.addEventListener("contextmenu", (e) => e.preventDefault());
-  }
-
-  mouseRightPressedPos = createVector(0, 0);
-  cameraPos = createVector(0, 0);
-
-  hudCanvas.imageMode(CENTER);
-  hudCanvas.textAlign(CENTER, CENTER);
-  hudCanvas.background(100);
-  hudCanvas.textSize(28);
-  hudCanvas.fill(200);
-  hudCanvas.noStroke();
-
-  mainCanvas.rectMode(CENTER);
-  mainCanvas.imageMode(CENTER);
-  mainCanvas.background(0);
-
-  // populate background image
+function populateBackgroundImages() {
   backgroundImg = createGraphics(1900, 900);
   combatImg = createGraphics(1900, 900);
   for (let row=0; row<16; row++) {
@@ -181,20 +136,43 @@ function initialize() {
   }
 }
 
+function initialize() {
+  // disable right click menu
+  for (let element of document.getElementsByClassName("p5Canvas")) {
+    element.addEventListener("contextmenu", (e) => e.preventDefault());
+  }
+
+  mouseRightPressedPos = createVector(0, 0);
+  cameraPos = createVector(0, 0);
+
+  hudCanvas.imageMode(CENTER);
+  hudCanvas.textAlign(CENTER, CENTER);
+  hudCanvas.background(100);
+  hudCanvas.textSize(28);
+  hudCanvas.fill(200);
+  hudCanvas.noStroke();
+
+  mainCanvas.rectMode(CENTER);
+  mainCanvas.imageMode(CENTER);
+  mainCanvas.background(0);
+
+  populateBackgroundImages();
+}
+
 function setup() {  
   // noLoop();
-  createCanvas(1900, 1060);
-  mainCanvas = createGraphics(1900, 1000);
+  createCanvas(1900, 900);
+  mainCanvas = createGraphics(1900, 840);
   hudCanvas = createGraphics(1900, 60);  
   initialize();  
-  background(100)
+  background(100);
   
   hud = new Hud(hudData);
   worldMap = new WorldMap(mapData, tracksData, buildingsData, citiesData, industryData);
-  let aux = worldMap.map2screen(5, 12);
+  let aux = worldMap.map2screen(12, 17);
   cameraPos.set(aux.x, aux.y);
 
-  locomotive = new Locomotive(createVector(5, 12), 270.0, trWagonData); 
+  locomotive = new Locomotive(createVector(12, 17), 0.0, trWagonData); 
   locomotive.addWagon("Locomotive");
   locomotive.addWagon("Tender");
   locomotive.addWagon("Cannon");
@@ -203,16 +181,16 @@ function setup() {
   locomotive.addWagon("Iron");
   locomotive.addWagon("Wood");
   locomotive.addWagon("Container");
+  locomotive.addWagon("Drill");
   
 
   // currentScene = "Navigation";
   currentScene = "CityTrade";
   currentCity = new ScnCityTrade(citiesData[65], industryData, roadsData, buildingsData, backgroundImg);
-
   // currentScene = "Combat";
   // currentCity = new ScnCombat(combatImg);
-  //currentScene = "WagonTrade";
-  //currentCity = new ScnWagonTrade(tracksData, trWagonData, backgroundImg);
+  // currentScene = "WagonTrade";
+  // currentCity = new ScnWagonTrade(tracksData, trWagonData, backgroundImg);
 
   switch(currentScene) {
     case("Navigation"):
@@ -249,25 +227,9 @@ function draw() {
       locomotive.update(worldMap);
       //let aux = worldMap.map2screen(locomotive.position.x, locomotive.position.y, 2);
       //cameraPos.set(aux.x, aux.y)
-      // if (locomotive.orientation == 90 || locomotive.orientation == 270) {
-      //   worldMap.drawTile(mainCanvas, locomotive.currentTile.y-1, locomotive.currentTile.x);
-      //   worldMap.drawTile(mainCanvas, locomotive.currentTile.y, locomotive.currentTile.x);
-      //   worldMap.drawTile(mainCanvas, locomotive.currentTile.y+1, locomotive.currentTile.x);
-      // } else if (locomotive.orientation == 0 || locomotive.orientation == 180) {
-      //   worldMap.drawTile(mainCanvas, locomotive.currentTile.y, locomotive.currentTile.x+1);
-      //   worldMap.drawTile(mainCanvas, locomotive.currentTile.y, locomotive.currentTile.x);
-      //   worldMap.drawTile(mainCanvas, locomotive.currentTile.y, locomotive.currentTile.x-1);
-      // } else {
-      //   worldMap.drawTile(mainCanvas, locomotive.currentTile.y, locomotive.currentTile.x+1);
-      //   worldMap.drawTile(mainCanvas, locomotive.currentTile.y, locomotive.currentTile.x-1);
-      //   worldMap.drawTile(mainCanvas, locomotive.currentTile.y, locomotive.currentTile.x);
-      //   worldMap.drawTile(mainCanvas, locomotive.currentTile.y+1, locomotive.currentTile.x);
-      //   worldMap.drawTile(mainCanvas, locomotive.currentTile.y-1, locomotive.currentTile.x);
-      // }
       
       if (locomotive.enteredNewTile()) {
         locomotive.newOrientation(worldMap);
-        //let tileIdx = worldMap.map2idx(locomotive.currentTile);
         let tileString = String(locomotive.currentTile.x) + "," + String(locomotive.currentTile.y);
         
         if (tileString in events) {
@@ -296,6 +258,19 @@ function draw() {
   };
 
   hud.show(hudCanvas);
+
+  // Comrad text
+  // mainCanvas.fill(0,0,0,50)
+  // mainCanvas.rect(mainCanvas.width/2,mainCanvas.height-100,mainCanvas.width,200);
+  mainCanvas.image(miscData.comrad,75,mainCanvas.height-94)
+  // mainCanvas.noStroke()
+  // mainCanvas.fill(0)
+  // mainCanvas.textSize(30)
+  // mainCanvas.text("Welcome on board, comrad.", 80,mainCanvas.height-150);
+  // mainCanvas.text("I'm Igor, your second in command of the Transarctica.", 80,mainCanvas.height-100);
+  // mainCanvas.text("You can click me anytime to review your objectives", 80,mainCanvas.height-50);
+  
+  
   image(mainCanvas, 0, 0);
   image(hudCanvas, 0, 840);
 }
@@ -310,8 +285,9 @@ function mousePressed() {
 }
 
 function mouseReleased() {
-  if (mouseButton === RIGHT)
-    mouseRightPressed = false;  
+  if (mouseButton === RIGHT) {
+    mouseRightPressed = false;
+  }  
 }
 
 function mouseDragged() {
@@ -357,9 +333,11 @@ function keyPressed() {
         locomotive.turn180(worldMap);
       }
     break;
+
     case("CityTrade"):
       currentCity.processKey(keyCode);
     break;
+    
     case("WagonTrade"):
       currentCity.processKey(keyCode);
     break;
@@ -373,12 +351,14 @@ function mouseClicked() {
       worldMap.processClick(mouseX-width/2, mouseY-height/2, cameraPos);
       redrawMap();  //Todo: only redraw clicked tile  
     break;
+
     case("CityTrade"):
       action = currentCity.processClick(mouseX, mouseY, locomotive);
       if (action == 1)
         currentScene = "Navigation";
         redrawMap();
     break;
+    
     case("WagonTrade"):
     break;
   }  
