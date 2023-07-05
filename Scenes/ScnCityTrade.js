@@ -1,5 +1,20 @@
+// Copyright (C) 2023  Sembei Norimaki
+
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
 function ScnCityTrade(cityData, industryData, roadsData, buildingsData, backgroundImg) {
-  console.log(cityData)
   this.cityData = cityData;
   this.roadsData = roadsData;
   this.buildingsData = buildingsData;
@@ -20,6 +35,8 @@ function ScnCityTrade(cityData, industryData, roadsData, buildingsData, backgrou
   this.gear = "N";
   this.direction = 1;  // -1 backward
   this.trainXpos = 0;
+
+  this.rewardUnlocked = false;
 
   this.selectedObject = null;
   this.selectedWagon = null;
@@ -81,6 +98,7 @@ function ScnCityTrade(cityData, industryData, roadsData, buildingsData, backgrou
 
     if (this.exitSequence && this.trainXpos > 4000) {
       currentScene = "Navigation";
+      //cameraPosition = 
     }
 
     this.vel += this.acc;
@@ -100,9 +118,8 @@ function ScnCityTrade(cityData, industryData, roadsData, buildingsData, backgrou
   this.processClick = (x, y, train) => {
     console.log(`Clicked: ${round(x)}, ${round(y)}`);
 
-    let xmin, xmax;
     // traffic light
-    if (x>184 && y>650 && y<750) {
+    if (x>1820 && y>780 && y<880) {
       if (this.trafficLightState == 0) {
         this.trafficLightState = 1;
         this.trafficLightImg = this.buildingsData["11"].img;
@@ -110,14 +127,13 @@ function ScnCityTrade(cityData, industryData, roadsData, buildingsData, backgrou
         this.exitSequence = true;
       } 
     // train region
-    } else if (y > 750 && y < 805) {
+    } else if (y > 900 && y < 980) {
       let idx = train.clickHorizontalTrain(this.trainXpos, x, y);
       this.selectedWagon = idx;
 
     } else if (this.industry.isClicked(x, y)) {
-        console.log("Farm clicked");
-        this.selectedObject = this.industry;
-        this.selectedObjectType = "industry";
+      this.selectedObject = this.industry;
+      this.selectedObjectType = "industry";
     } else {
       for (let button of this.activeButtons) {
         if (button.isClicked(x, y)) {
@@ -134,15 +150,12 @@ function ScnCityTrade(cityData, industryData, roadsData, buildingsData, backgrou
               //TODO: I need the minQty for al resources here
               try {
                 train.sellResource(this.selectedObject, 2, this.goods[this.selectedObject.resourceName]);
+                this.fulfilled[this.selectedObject.resourceName] += 2;
               } catch (err) {
-                console.log("error selling")
-                console.log(this.selectedObject)
-                console.log(this.goods[this.selectedObject.resourceName])
                 this.errorMsg = err;
               }
             break;
             case("Close"):
-              console.log("Exit button clicked");
               this.selectedObject = null
               // return 1;
             break;
@@ -216,12 +229,21 @@ function ScnCityTrade(cityData, industryData, roadsData, buildingsData, backgrou
       canvas.text(`${this.cityData.name}`,width-200, texty);
       texty += 50;
       canvas.textAlign(LEFT, CENTER);
-      canvas.text(`Objectives:`, width-380, texty);
-      texty += 50;
+      canvas.text(`City needs:`, width-380, texty);
+      texty += 30;
       for(const [key, val] of Object.entries(this.needs)) {
-        canvas.text(`${key}: ${this.fulfilled[key]} / ${val}`, width-380, texty);
-        texty += 50;  
+        if (this.fulfilled[key] >= val)
+          canvas.fill("green");
+        else
+          canvas.fill("black");
+        
+        canvas.text(`    ${key}: ${this.fulfilled[key]} / ${val}`, width-380, texty);
+        texty += 30;  
       }
+      texty += 20;  
+      
+      canvas.text(`Reward: ${this.cityData.reward}`, width-380, texty);
+      
       this.activeButtons = [this.buttons.close];
       
     }
@@ -267,7 +289,7 @@ function ScnCityTrade(cityData, industryData, roadsData, buildingsData, backgrou
     canvas.image(this.roadsData["AD"].img, x+4*128, y-2*64);
     canvas.image(this.roadsData["Da"].img, x+3*128, y-3*64);
 
-    canvas.image(this.trafficLightImg, 1850,720)
+    canvas.image(this.trafficLightImg, canvas.width-50, canvas.height-150)
     
     //canvas.image(this.roadsData["Da"].img, x+2*128, y-4*64);
     //canvas.image(this.roadsData["AD"].img, x+128, y-5*64);
@@ -279,7 +301,7 @@ function ScnCityTrade(cityData, industryData, roadsData, buildingsData, backgrou
       house.show(canvas)
     }
 
-    train.showHorizontalTrain(canvas, this.trainXpos);
+    train.showHorizontalTrain(canvas, this.trainXpos, canvas.height-50);
     
 
     // selected objects can be: "Wagon", "Industry", "House", null

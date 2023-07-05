@@ -1,9 +1,17 @@
-// Events checked using the front sensor
+// BUG: after not being able to continue pressing ctrl allows the locomotive to get out of tracks
+
+// exiting a city should center camera on the locomotive
+
+// button to find locomotive
+// minimap
+// button to excavate a mine
+// button to show industry chains
+
+// traffic light as class
 
 // update hud in cities
-// snow junctions
 
-// update city fulfillment when selling needed goods
+// snow junctions
 
 // city buying prices: high for needed goods, low for produced goods, random avg otherwise
 
@@ -13,5 +21,31 @@
 
 // mines can provide: coal, iron, copper, uranium
 
+// train has a maximum number of wagons/weight. can be upgraded for extra power/speed
+
+// missions: transport X resource to Y city before date Z
+
+// fulfilling all city demands unlocks a reward
 
 
+// industry chains
+
+Oil Rig  -(oil)-> Oil Refinery  -(Fuel)-> Cities
+Farm -(livestock)-> Cities
+Grain -(grain)-> Cities
+Forest -(Wood)-> Lumber mill -(containers)-> Cities
+Coal mine -(Coal)-> Power plant
+Iron Mine -(Iron)-> Foundry -(Iron bars)-> 
+Sulfur Mine -(sulfur)-> Chemical Plant -(containers)-> cities
+Copper Mine -(Copper)-> Foundry -(Container)-> Cities
+Prison -> slaves
+Barracks -> Soldiers
+
+
+
+// List of goods
+// coal, iron, copper, wood, iron bars (rails), paper, paper black, sulfur, gold, water, diamonds, oil, livestock, containers, cannonballs, ammo, soldiers, slaves, mamooths
+
+
+//"ssss": [4550, 4062, 4567, 56, 59, 64, 61, 57, 63],
+      

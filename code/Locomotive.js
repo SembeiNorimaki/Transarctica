@@ -1,3 +1,19 @@
+// Copyright (C) 2023  Sembei Norimaki
+
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
 function Locomotive(pos, orientation, wagonsData) {
   // position of the locomotive in a 2d map, with decimals
   this.position = pos;
@@ -14,6 +30,8 @@ function Locomotive(pos, orientation, wagonsData) {
   this.prevTile = this.currentTile.copy();
 
   this.currentTileFrontSensor = createVector(round(this.frontSensor.x), round(this.frontSensor.y));
+  this.prevTileFrontSensor = createVector(round(this.frontSensor.x), round(this.frontSensor.y));
+  
   
   this.acceleration = createVector(0.0002, 0).setHeading(radians(this.orientation));
   this.braking = createVector(0.001, 0);  
@@ -87,8 +105,7 @@ function Locomotive(pos, orientation, wagonsData) {
     this.gold += price;
   }
 
-  this.showHorizontalTrain = (canvas, xpos) => {
-    let ypos = 800;
+  this.showHorizontalTrain = (canvas, xpos, ypos) => {
     this.wagons[0].setPos(createVector(xpos, ypos));
     this.wagons[0].showHorizontal(canvas);
       
@@ -145,6 +162,10 @@ function Locomotive(pos, orientation, wagonsData) {
   this.stop = () => {
     this.gear = "N";
   }
+  this.inmediateStop = () => {
+    this.gear = "N";
+    this.velocity.setMag(0.0);
+  }
 
   this.startStop = () => {
     if (this.gear == "N") {
@@ -163,17 +184,17 @@ function Locomotive(pos, orientation, wagonsData) {
   }
   
   this.checkFrontSensor = (worldMap) => {
-    let deltaX = this.currentTileFrontSensor.x - this.currentTile.x;
-    let deltaY = this.currentTileFrontSensor.y - this.currentTile.y;
-    
-    try {
+    let deltaX = this.currentTileFrontSensor.x - this.prevTileFrontSensor.x;
+    let deltaY = this.currentTileFrontSensor.y - this.prevTileFrontSensor.y;
+    let tileName = "";
+    // try {
       tileName = worldMap.tileIdx2name[worldMap.board[this.currentTileFrontSensor.y][this.currentTileFrontSensor.x]];
-    } catch {
-      console.log("dsdfsdf")
-      this.stop();
-      this.velocity.setMag(0.0);
-      return;
-    }
+    // } catch {
+    //   console.log("dsdfsdf")
+    //   this.stop();
+    //   this.velocity.setMag(0.0);
+    //   return;
+    // }
 
     if ((deltaX == 1 && !tileName.includes("A")) ||
         (deltaX == -1 && !tileName.includes("D")) ||
@@ -269,8 +290,12 @@ function Locomotive(pos, orientation, wagonsData) {
 
   }
 
-  this.enteredNewTile = () => {
-    return !this.currentTile.equals(this.prevTile);
+  this.enteredNewTile = (sensorId) => {
+    if (sensorId == 1)  { // center sensor
+      return !this.currentTile.equals(this.prevTile);
+    } else if (sensorId == 2) {
+      return !this.currentTileFrontSensor.equals(this.prevTileFrontSensor);
+    }
   }
 
   this.update = (worldMap) => {
@@ -293,9 +318,11 @@ function Locomotive(pos, orientation, wagonsData) {
     this.prevTile = this.currentTile.copy();
     this.currentTile.set(round(this.position.x), round(this.position.y));
 
+    
+    this.prevTileFrontSensor = this.currentTileFrontSensor.copy();
     this.currentTileFrontSensor.set(round(this.frontSensor.x), round(this.frontSensor.y));
 
-    this.checkFrontSensor(worldMap);
+    //this.checkFrontSensor(worldMap);
 
     
 

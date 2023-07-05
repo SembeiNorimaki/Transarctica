@@ -14,15 +14,19 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-function ScnCombat(backgroundImg) {
-  this.backgroundImg = backgroundImg;
-  this.trainXpos = 1600;
+function House(pos, img) {
+  this.pos = pos;
+  this.img = img;
+  this.halfSize = createVector(64, 64);
 
-  this.update = () => {
-
+  this.isClicked = (x, y) => {
+    return ((x > this.pos.x - this.halfSize.x) &&
+            (x < this.pos.x + this.halfSize.x) &&
+            (y > this.pos.y - this.halfSize.y) &&
+            (y < this.pos.y + this.halfSize.y));
   }
-  this.show = (canvas, train) => {
-    canvas.image(this.backgroundImg, canvas.width/2, canvas.height/2);  
-    train.showHorizontalTrain(canvas, this.trainXpos);
+  
+  this.show = (canvas) => {
+    canvas.image(this.img, pos.x, pos.y);
   }
 }

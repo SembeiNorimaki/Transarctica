@@ -1,3 +1,19 @@
+// Copyright (C) 2023  Sembei Norimaki
+
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
 function WorldMap(data, tracks, buildings, cities, industries) {
   const TILE_WIDTH_HALF = 128;
   const TILE_HEIGHT_HALF = 64;
@@ -32,7 +48,7 @@ function WorldMap(data, tracks, buildings, cities, industries) {
     "tAC": 0x1A,
     "tBD": 0x1B,
 
-    "t1": 0x30,
+    "wXyz": 0x30,
     "t2": 0x31,
     "t3": 0x32,
     "t4": 0x33,
@@ -93,30 +109,30 @@ function WorldMap(data, tracks, buildings, cities, industries) {
     0x1A: "tAC",
     0x1B: "tBD",
 
-    0x30: "t1",
-    0x31: "t2",
-    0x32: "t3",
-    0x33: "t4",
+    0x30: "wXyz",
+    0x31: "wxyZ",
+    0x32: "wXyZ",
+    0x33: "wxYz",
     0x34: "t5",
-    0x35: "t6",
+    0x35: "wxYZ",
     0x36: "t7",
-    0x37: "t8",
-    0x38: "t9",
+    0x37: "Wxyz",
+    0x38: "WXyz",
     0x39: "t10",
     0x3A: "t11",
-    0x3B: "t12",
+    0x3B: "WxYz",
     0x3C: "t13",
     0x3D: "t14",
     0x3E: "t15",
     0x3F: "t16",
     0x40: "t17",
     0x41: "t18",
-    0x2F: "t19",
+    0x2F: "wxyz",
 
-    0x2B: "tA",
-    0x2C: "tB",
-    0x2D: "tC",
-    0x2E: "tD",
+    0x2B: "tunnelA",
+    0x2C: "tunnelB",
+    0x2D: "tunnelC",
+    0x2E: "tunnelD",
 
     0x80: "sAD",
     0x81: "sBC",
@@ -218,7 +234,7 @@ function WorldMap(data, tracks, buildings, cities, industries) {
   this.drawTile = (canvas, row, col, cameraPos) => {
     screenPos = this.map2screen(col, row);
     screenPos.sub(cameraPos);
-    screenPos.add(950, 420);
+    screenPos.add(canvas.width/2, canvas.height/2);
     if (screenPos.x < -TILE_WIDTH_HALF ||
         screenPos.y < -TILE_HEIGHT_HALF || 
         screenPos.x > canvas.width + TILE_WIDTH_HALF || 
