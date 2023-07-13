@@ -52,6 +52,7 @@ function Locomotive(pos, orientation, wagonsData) {
   this.capacity = {
     "Coal": 0,
     "Iron": 0,
+    "Copper": 0,
     "Oil": 0,
     "Livestock": 0,
     "Wood": 0,
@@ -61,6 +62,7 @@ function Locomotive(pos, orientation, wagonsData) {
   this.usedSpace = {
     "Coal": 0,
     "Iron": 0,
+    "Copper": 0,
     "Oil": 0,
     "Livestock": 0,
     "Wood": 0,

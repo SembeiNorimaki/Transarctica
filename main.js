@@ -28,6 +28,7 @@ let citiesData = {};
 let hudData = {};
 let trWagonData = {};
 let industryData = {};
+let resourceData = {};
 let miscData = {};
 let tileChangesData;
 
@@ -44,18 +45,24 @@ let currentCity, currentScene;
 
 let backgroundImg, combatImg;
 
+let events;
 
 //let scenes = ("Navigation", "CityTrade", "WagonTrade", "Combat");
 
-let events = {
-  "13,16": 10,  // mine  
-  "9,22": 64,   // Taoudeni
-  "5,10": 65,    // Marrakesh
-  "5,8": 66,    // Casablanca
-  "12,2": 67,    // Granada
-  "24,15": 68    // In Salah
+// let events = {
+//   "13,16": 10,  // mine  
+//   "7,2": 11,  // mine2  
   
-};
+//   "9,22": "Taoudeni",   
+//   "5,10": "Marrakesh",    
+//   "5,8": "Casablanca",    
+//   "0,0": "Rhum",
+//   "12,2": "Granada",    
+//   "24,15": "Rome",    
+//   "28,2": "Tibesti",    
+//   "28,17": "Istanbul",    
+//   "28,13": "In Salah",      
+// };
 
 function preload() {
   loadJSON("resources/allResources.json", jsonData => {
@@ -63,6 +70,8 @@ function preload() {
     citiesData = jsonData.cities;
     tileChangesData = jsonData.tileChanges;
     mapData = loadStrings('resources/maps/map_small.txt');
+    resourceData = jsonData.resources;
+    events = jsonData.events;
 
     // - Misc
     for (const [key, val] of Object.entries(jsonData.misc)) {
@@ -196,32 +205,33 @@ function setup() {
   background(100);
   
   hud = new Hud(hudData);
-  worldMap = new WorldMap(mapData, tracksData, buildingsData, citiesData, industryData);
-  let aux = worldMap.map2screen(12, 17);
+  worldMap = new WorldMap(mapData, tracksData, buildingsData, citiesData, industryData, miscData);
+  let aux = worldMap.map2screen(0, 2);
   cameraPos.set(aux.x, aux.y);
 
-  locomotive = new Locomotive(createVector(12, 17), 0.0, trWagonData); 
+  locomotive = new Locomotive(createVector(0, 2), 270.0, trWagonData); 
   locomotive.addWagon("Locomotive");  // 0
   locomotive.addWagon("Tender");      // 1
-  locomotive.addWagon("Cannon");      // 2
-  locomotive.addWagon("Livestock");   // 3
-  locomotive.addWagon("Oil");         // 4
-  locomotive.addWagon("Iron");        // 5
+  locomotive.addWagon("Livestock");   // 2
+  locomotive.addWagon("Oil");         // 3
+  locomotive.addWagon("Iron");        // 4
+  locomotive.addWagon("Copper");      // 5
   locomotive.addWagon("Wood");        // 6
   locomotive.addWagon("Container");   // 7
   locomotive.addWagon("Drill");       // 8
 
-  locomotive.wagons[1].addResource(1000);
-  locomotive.wagons[4].addResource(1000);
+  // locomotive.wagons[1].addResource(2);
+  // locomotive.wagons[3].addResource(2);
+  locomotive.wagons[4].addResource(1500);
   locomotive.wagons[5].addResource(1500);
-  locomotive.wagons[6].addResource(1000);
-  locomotive.wagons[7].addResource(4);
-
+  locomotive.wagons[6].addResource(0);
+  locomotive.wagons[7].addResource(0);
+  // locomotive.wagons[8].addResource(4);
   
 
   currentScene = "Navigation";
   // currentScene = "CityTrade";
-  // currentCity = new ScnCityTrade(citiesData[65], industryData, roadsData, buildingsData, backgroundImg);
+  // currentCity = new ScnCityTrade(citiesData["Taoudeni"], industryData, roadsData, buildingsData, backgroundImg);
   // currentScene = "Combat";
   // currentCity = new ScnCombat(combatImg);
   // currentScene = "WagonTrade";
@@ -249,13 +259,14 @@ function setup() {
 }
 
 function redrawMap() {
-  mainCanvas.background(0);
-  worldMap.show(mainCanvas, cameraPos);
+  //mainCanvas.background(0);
+  //worldMap.show(mainCanvas, cameraPos);
 }
 
 function draw() {  
+  mainCanvas.background(0);
   hud.tick();
-  hud.update(locomotive.gear, locomotive.gold, round(locomotive.fuel), round(locomotive.velocity.mag()*10000));
+  //hud.update(locomotive.gear, locomotive.gold, round(locomotive.fuel), round(locomotive.velocity.mag()*10000));
   
   switch(currentScene) {
     case("Navigation"):
@@ -264,15 +275,16 @@ function draw() {
       //cameraPos.set(aux.x, aux.y)
       
       if (locomotive.enteredNewTile(2)) {   // check front sensor
-        console.log("Front sensor entered a new tile")
         let tileString = String(locomotive.currentTileFrontSensor.x) + "," + String(locomotive.currentTileFrontSensor.y);
         
         if (tileString in events) {
           console.log("Event", events[tileString]);
           locomotive.inmediateStop();
           locomotive.turn180(worldMap);
-          if (events[tileString] == 10) {  // mine
+          if (events[tileString] == "Mine") {  // mine
             currentScene = "Mine";
+            //hud.showMine();
+
           } else {
             currentCity = new ScnCityTrade(citiesData[events[tileString]], industryData, roadsData, buildingsData, backgroundImg);
             currentScene = "CityTrade";
@@ -282,7 +294,6 @@ function draw() {
         }
 
       } else if (locomotive.enteredNewTile(1)) {   // check central sensor
-        console.log("Central sensor entered a new tile")
         locomotive.newOrientation(worldMap);
         
         // let tileString = String(locomotive.currentTile.x) + "," + String(locomotive.currentTile.y);
@@ -311,21 +322,20 @@ function draw() {
       currentCity.show(mainCanvas, locomotive);
     break;
     case("Mine"):
+      mainCanvas.push();
       mainCanvas.background(0)
       //mainCanvas.rect(mainCanvas.width/2, mainCanvas.height/2,mainCanvas.width,mainCanvas.height)  
       mainCanvas.image(miscData.miningScene, mainCanvas.width/2, mainCanvas.height/2-95);
       // mainCanvas.rect(mainCanvas.width/2, mainCanvas.height-95,mainCanvas.width,190)  
       mainCanvas.fill(255,255,0)
       mainCanvas.textSize(30)
-      mainCanvas.text("You arrive to a Coal mine", 100, mainCanvas.height-150)
-      mainCanvas.text("You have: 1 Crane, 100 Slaves and 3 Mamooths", 100, mainCanvas.height-100)
-      
-      mainCanvas.text("Mineral richness: High", 1000, mainCanvas.height-150)
-      mainCanvas.text("Danger level: Low", 1000, mainCanvas.height-100)
-      
-      // mainCanvas.text("Expected results:", 1000, mainCanvas.height-150);
-      // mainCanvas.text("2000 tons of Coal will be extracted", 1100, mainCanvas.height-100);
-      // mainCanvas.text("20 slaves will die", 1100, mainCanvas.height-50);
+      mainCanvas.text("You arrive to an Iron mine", 100, mainCanvas.height-150)
+      mainCanvas.text("You have: 0 Cranes, 0 Slaves and 0 Mamooths", 100, mainCanvas.height-100)
+      mainCanvas.text("You extract 0 tons of Iron", 100, mainCanvas.height-50)
+      //locomotive.buyResource("Iron", 500, 0);
+      mainCanvas.pop();
+      // mainCanvas.text("Mineral richness: High", 1000, mainCanvas.height-150)
+      // mainCanvas.text("Danger level: Low", 1000, mainCanvas.height-100)
       
     break;
   };
@@ -434,5 +444,10 @@ function mouseClicked() {
     
     case("WagonTrade"):
     break;
+    case("Mine"):
+      locomotive.turn180(worldMap);
+      currentScene = "Navigation";
+    break;
+    
   }  
 }

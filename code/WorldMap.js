@@ -14,7 +14,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-function WorldMap(data, tracks, buildings, cities, industries) {
+function WorldMap(data, tracks, buildings, cities, industries, trees) {
   const TILE_WIDTH_HALF = 128;
   const TILE_HEIGHT_HALF = 64;
 
@@ -48,6 +48,11 @@ function WorldMap(data, tracks, buildings, cities, industries) {
     "tAC": 0x1A,
     "tBD": 0x1B,
 
+    "tunnelA": 0x2B,
+    "tunnelB": 0x2C,
+    "tunnelC": 0x2D,
+    "tunnelD": 0x2E,
+
     "wXyz": 0x30,
     "t2": 0x31,
     "t3": 0x32,
@@ -68,15 +73,19 @@ function WorldMap(data, tracks, buildings, cities, industries) {
     "t18": 0x41,
     "t19": 0x2F,
 
-    "tA": 0x2B,
-    "tB": 0x2C,
-    "tC": 0x2D,
-    "tD": 0x2E,
+
+
+
 
     "sAD": 0x80,
     "sBC": 0x81,
     "sBC2": 0x82,
     "sBC3": 0x83,
+    
+    "tree1": 60,
+    "tree2": 61,
+    "tree3": 62
+
   };
   
   this.tileIdx2name = {
@@ -127,6 +136,7 @@ function WorldMap(data, tracks, buildings, cities, industries) {
     0x3F: "t16",
     0x40: "t17",
     0x41: "t18",
+
     0x2F: "wxyz",
 
     0x2B: "tunnelA",
@@ -137,7 +147,11 @@ function WorldMap(data, tracks, buildings, cities, industries) {
     0x80: "sAD",
     0x81: "sBC",
     0x82: "sBC1",
-    0x83: "sBC2"
+    0x83: "sBC2",
+
+    60: "tree1",
+    61: "tree2",
+    62: "tree3"
   };
 
   this.tileChanges = {
@@ -162,6 +176,7 @@ function WorldMap(data, tracks, buildings, cities, industries) {
   this.buildings = buildings;
   this.cities = cities;
   this.industries = industries;
+  this.trees = trees;
 
   this.board = Array.from(Array(this.NROWS), () => new Array(this.NCOLS));
 
@@ -243,10 +258,19 @@ function WorldMap(data, tracks, buildings, cities, industries) {
     }
 
     try {  
-      if (this.board[row][col] == 0x90) {
+      // if (this.board[row][col] == 0x00 ) {
+      //   canvas.image(this.tracks["0"].img, screenPos.x, screenPos.y);
+      //   canvas.image(this.trees["tree1"], screenPos.x, screenPos.y);
+      // } 
+      if (this.board[row][col] == 0x60) {
         canvas.image(this.tracks["0"].img, screenPos.x, screenPos.y);
-        canvas.image(this.tracks["tree"].img, screenPos.x, screenPos.y-30);
-        
+        canvas.image(this.trees["tree1"], screenPos.x-50, screenPos.y-50);  
+      } else if (this.board[row][col] == 0x61) {
+        canvas.image(this.tracks["0"].img, screenPos.x, screenPos.y);
+        canvas.image(this.trees["tree2"], screenPos.x-50, screenPos.y-90);
+      } else if (this.board[row][col] == 0x62) {
+        canvas.image(this.tracks["0"].img, screenPos.x, screenPos.y);
+        canvas.image(this.trees["tree3"], screenPos.x-50, screenPos.y-80);
       } else if (this.board[row][col] == 0x81) {  // stations BC
         canvas.image(this.tracks["0"].img, screenPos.x, screenPos.y);
         //canvas.image(this.tracks["sBC1"].img, screenPos.x-25, screenPos.y-56);

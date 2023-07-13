@@ -14,34 +14,35 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-class ClickableRegion {
-  constructor (pos, halfSize, image, text) {
+class TrafficLight {
+  constructor(pos, images, halfSize) {
     this.pos = pos;
-    this.bgImage = image[0];
-    this.fgImage = image[1];
-    this.halfSize = createVector(halfSize[0], halfSize[1]);
-    this.text = text;
+    this.redImage = images[0];
+    this.greenImage = images[1];
+    this.halfSize = createVector(halfSize.x, halfSize.y); 
+    this.currentColor = 0;
+    this.currentImage = this.redImage;
   }
-  
+
   isClicked(x, y) {
+    console.log(int(x),int(y),this.pos.array())
     return ((x > this.pos.x - this.halfSize.x) &&
             (x < this.pos.x + this.halfSize.x) &&
             (y > this.pos.y - this.halfSize.y) &&
             (y < this.pos.y + this.halfSize.y));
-  }     
-  
-  show(canvas) {
-    canvas.image(this.bgImage, this.pos.x, this.pos.y);
-    canvas.image(this.fgImage, this.pos.x, this.pos.y);  
+  }  
+
+  onClick() {
+    if (this.currentColor == 0) {
+      this.currentColor = 1;
+      this.currentImage = this.greenImage;
+    } else {
+      this.currentColor = 0;
+      this.currentImage = this.redImage;
+    } 
   }
 
-  showText(canvas) {
-    canvas.push();
-    canvas.textAlign(CENTER, CENTER);
-    canvas.fill(255);
-    canvas.rect(this.pos.x, this.pos.y, this.halfSize.x*2, this.halfSize.y*2);
-    canvas.fill(0);
-    canvas.text(this.text, this.pos.x, this.pos.y);
-    canvas.pop();
+  show(canvas) {
+    canvas.image(this.currentImage, this.pos.x, this.pos.y);
   }
 }

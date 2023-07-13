@@ -17,6 +17,8 @@
 function Wagon(id, name, wagonData) {
   this.id = id;
   this.name = name;
+  //this.displayName = name;
+  
   this.img = wagonData.img;
   this.halfSize = [wagonData.img[0].width/2, wagonData.img[0].height/2];
   this.units = wagonData.units;
