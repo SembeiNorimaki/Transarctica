@@ -14,21 +14,10 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-class House {
-  constructor(pos, img) {
-    this.pos = pos;
-    this.img = img;
-    this.halfSize = createVector(64, 64);
-  }
-
-  isClicked(x, y) {
-    return ((x > this.pos.x - this.halfSize.x) &&
-            (x < this.pos.x + this.halfSize.x) &&
-            (y > this.pos.y - this.halfSize.y) &&
-            (y < this.pos.y + this.halfSize.y));
-  }
-  
-  show(canvas) {
-    canvas.image(this.img, this.pos.x, this.pos.y);
+class City {
+  constructor(cityData) {
+    this.name = cityData.name;
+    this.industry = cityData.industry;
+    this.needs = cityData.needs;    
   }
 }

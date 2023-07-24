@@ -14,68 +14,70 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-function ScnCityTrade(cityData, industryData, roadsData, buildingsData, backgroundImg) {
-  this.cityData = cityData;
-  this.roadsData = roadsData;
-  this.buildingsData = buildingsData;
-  this.industryType = cityData.industry;
-  this.industryAvailableQty = cityData.availableQty;
-  this.needs = cityData.needs;
-  this.fulfilled = {}
-  for(const [key, val] of Object.entries(this.needs)) {
-    this.fulfilled[key] = 0;
-  }
-  this.goods = cityData.goods;
-  this.backgroundImg = backgroundImg;
-  this.industryPos = createVector(384, 412);
-  this.maxVel = 10.0;
-  this.vel = this.maxVel;  
-  this.acc = 0;
-  this.gear = "N";
-  this.direction = 1;  // -1 backward
-  this.trainXpos = 0;
+class ScnCityTrade {
+  constructor(cityData, industryData, roadsData, buildingsData, backgroundImg) {
+    this.cityData = cityData;
+    this.roadsData = roadsData;
+    this.buildingsData = buildingsData;
+    this.industryType = cityData.industry;
+    this.industryAvailableQty = cityData.availableQty;
+    this.needs = cityData.needs;
+    this.fulfilled = {}
+    for(const [key, val] of Object.entries(this.needs)) {
+      this.fulfilled[key] = 0;
+    }
+    this.goods = cityData.goods;
+    this.backgroundImg = backgroundImg;
+    this.industryPos = createVector(384, 412);
+    this.maxVel = 10.0;
+    this.vel = this.maxVel;  
+    this.acc = 0;
+    this.gear = "N";
+    this.direction = 1;  // -1 backward
+    this.trainXpos = 0;
 
-  this.rewardUnlocked = false;
+    this.rewardUnlocked = false;
 
-  this.selectedObject = null;
-  this.selectedWagon = null;
-  this.selectedObjectType = null;
-  this.errorMsg = "";
+    this.selectedObject = null;
+    this.selectedWagon = null;
+    this.selectedObjectType = null;
+    this.errorMsg = "";
 
-  this.industry = new Industry(this.industryPos, industryData[cityData.industry]);
+    this.industry = new Industry(this.industryPos, industryData[cityData.industry]);
 
-  this.buttons = {};
-  this.buttons.buy = new ClickableRegion(createVector(1600, 700), [80, 30], [], "Buy");
-  this.buttons.sell = new ClickableRegion(createVector(1600, 700), [80, 30], [], "Sell");
-  this.buttons.close = new ClickableRegion(createVector(1800, 700), [80, 30], [], "Close");
+    this.buttons = {};
+    this.buttons.buy = new ClickableRegion(createVector(1600, 700), [80, 30], [], "Buy");
+    this.buttons.sell = new ClickableRegion(createVector(1600, 700), [80, 30], [], "Sell");
+    this.buttons.close = new ClickableRegion(createVector(1800, 700), [80, 30], [], "Close");
 
-  this.activeButtons = [];
-  // this.trafficLightImg = this.buildingsData["10"].img;
-  // this.trafficLightState = 0;
-  this.exitSequence = false;
-  this.enterSequence = true;
-  // this.buttons.sell = new ClickableRegion(createVector(1600, 600), [80, 30], [], "Sell");
-  
+    this.activeButtons = [];
+    // this.trafficLightImg = this.buildingsData["10"].img;
+    // this.trafficLightState = 0;
+    this.exitSequence = false;
+    this.enterSequence = true;
+    // this.buttons.sell = new ClickableRegion(createVector(1600, 600), [80, 30], [], "Sell");
+    
 
-  this.trafficLight = new TrafficLight(createVector(canvas.width-50, 
-    canvas.height-220), 
-    [this.buildingsData["10"].img, this.buildingsData["11"].img], 
-    createVector(60, 100));
+    this.trafficLight = new TrafficLight(createVector(canvas.width-50, 
+      canvas.height-220), 
+      [this.buildingsData["10"].img, this.buildingsData["11"].img], 
+      createVector(60, 100));
 
-  this.houses = [];
-  //this.houses.push(new House(createVector(128+4*128, 418-4*64), this.buildingsData["8"].img));
-  //this.houses.push(new House(createVector(128+6*128, 418-4*64), this.buildingsData["9"].img));
-  this.houses.push(new House(createVector(128+5*128, 418-3*64+30), this.buildingsData["8"].img));
-  
-  this.houses.push(new House(createVector(128+9*128, 418-64+30), this.buildingsData["9"].img));
-  this.houses.push(new House(createVector(128+6*128, 418+2*64+30), this.buildingsData["9"].img));
-  this.houses.push(new House(createVector(128+8*128, 418+30), this.buildingsData["8"].img));
-  this.houses.push(new House(createVector(128+8*128, 418-4*64+30), this.buildingsData["9"].img));
-  
-  this.houses.push(new House(createVector(128+7*128, 418-3*64+30), this.buildingsData["8"].img));
-  this.houses.push(new House(createVector(128+6*128, 418-2*64+30), this.buildingsData["9"].img));
-  
-  this.processKey = (keyCode) => {
+    this.houses = [];
+    //this.houses.push(new House(createVector(128+4*128, 418-4*64), this.buildingsData["8"].img));
+    //this.houses.push(new House(createVector(128+6*128, 418-4*64), this.buildingsData["9"].img));
+    this.houses.push(new House(createVector(128+5*128, 418-3*64+30), this.buildingsData["8"].img));
+    
+    this.houses.push(new House(createVector(128+9*128, 418-64+30), this.buildingsData["9"].img));
+    this.houses.push(new House(createVector(128+6*128, 418+2*64+30), this.buildingsData["9"].img));
+    this.houses.push(new House(createVector(128+8*128, 418+30), this.buildingsData["8"].img));
+    this.houses.push(new House(createVector(128+8*128, 418-4*64+30), this.buildingsData["9"].img));
+    
+    this.houses.push(new House(createVector(128+7*128, 418-3*64+30), this.buildingsData["8"].img));
+    this.houses.push(new House(createVector(128+6*128, 418-2*64+30), this.buildingsData["9"].img));
+  }  
+
+  processKey(keyCode) {
     if (keyCode == LEFT_ARROW) {
       if (this.vel == 1.5) 
         this.vel = 0.0;
@@ -89,7 +91,7 @@ function ScnCityTrade(cityData, industryData, roadsData, buildingsData, backgrou
     }
   }
   
-  this.update = (train) => {
+  update(train) {
     if (this.enterSequence && this.trainXpos > 1100) {
       if (this.vel > 0)
         this.acc = -0.1;
@@ -119,7 +121,7 @@ function ScnCityTrade(cityData, industryData, roadsData, buildingsData, backgrou
     }
   }
 
-  this.processClick = (x, y, train) => {
+  processClick(x, y, train) {
     console.log(`Clicked: ${round(x)}, ${round(y)}`);
     this.errorMsg = "";
 
@@ -178,15 +180,15 @@ function ScnCityTrade(cityData, industryData, roadsData, buildingsData, backgrou
     }
   }
 
-  this.buy = () => {
+  buy() {
 
   }
 
-  this.sell = () => {
+  sell() {
     
   }
 
-  this.calculateSellingPrice = (resourceName) => {
+  calculateSellingPrice(resourceName) {
       if (resourceName in this.needs) {
         //console.log("The city needs this resource");
         return(int(resourceData[resourceName].price * 2));
@@ -199,7 +201,7 @@ function ScnCityTrade(cityData, industryData, roadsData, buildingsData, backgrou
   }
 
 
-  this.showTradeWindow = (canvas, train) => {
+  showTradeWindow(canvas, train) {
     let texty = 220;
     canvas.push();
     canvas.fill(255,255,255,100);
@@ -291,7 +293,7 @@ function ScnCityTrade(cityData, industryData, roadsData, buildingsData, backgrou
 
   }
 
-  this.show = (canvas, train) => {
+  show(canvas, train) {
     let x = 128;
     let y = 546-128;
     

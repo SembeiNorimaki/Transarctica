@@ -14,25 +14,27 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-function Industry(pos, industryData) {
-  this.industryName = industryData.industryName;
-  this.resourceName = industryData.resourceName;
-  this.units = resourceData[this.resourceName].units; 
-  this.img = industryData.img;
-  this.imgs = industryData.imgs;
-  this.pos = pos;
-  this.offsety = industryData.offsety;
-  this.offsets = industryData.offsets;
-  this.minQty = resourceData[this.resourceName].minQty;  
+class Industry {
+  constructor(pos, industryData) {
+    this.industryName = industryData.industryName;
+    this.resourceName = industryData.resourceName;
+    this.units = resourceData[this.resourceName].units; 
+    this.img = industryData.img;
+    this.imgs = industryData.imgs;
+    this.pos = pos;
+    this.offsety = industryData.offsety;
+    this.offsets = industryData.offsets;
+    this.minQty = resourceData[this.resourceName].minQty;  
 
-  this.spriteIdx = 0;
-  this.spriteSpeed = 0.05;
+    this.spriteIdx = 0;
+    this.spriteSpeed = 0.05;
+  }
 
-  this.isClicked = (x, y) => {
+  isClicked(x, y) {
     return (x > (this.pos.x - 300) && x < (this.pos.x + 300) && y > (this.pos.y - 180) && y < (this.pos.y + 180));
   }
 
-  this.show = (canvas) => {
+  show(canvas) {
     if (this.industryName == "OilRig") {
       this.showOilRig(canvas)
     } else if (this.industryName == "Forest") {
@@ -42,7 +44,7 @@ function Industry(pos, industryData) {
     }
   }
 
-  this.showForest = (canvas) => {    
+  showForest(canvas) {    
     canvas.image(this.img, this.pos.x, this.pos.y-128+this.offsety);
     canvas.image(this.img, this.pos.x+128, this.pos.y-64+this.offsety);
     canvas.image(this.img, this.pos.x-128, this.pos.y-64+this.offsety);
@@ -54,7 +56,7 @@ function Industry(pos, industryData) {
     canvas.image(this.img, this.pos.x, this.pos.y+128+this.offsety);
   }
 
-  this.showOilRig = (canvas) => {
+  showOilRig(canvas) {
     let i = 0;
     canvas.image(this.imgs[int(frameCount/20 % this.imgs.length)], 
       this.pos.x-this.offsets[int(frameCount/20 % this.imgs.length)][0], 

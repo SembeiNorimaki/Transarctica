@@ -14,182 +14,169 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-function WorldMap(data, tracks, buildings, cities, industries, trees) {
-  const TILE_WIDTH_HALF = 128;
-  const TILE_HEIGHT_HALF = 64;
-
-  this.tileName2idx = {
-    "0": 0x00,
-    "AD": 0x01,
-    "BC": 0x02,
-    "AB": 0x03,
-    "CD": 0x04,
-    "AC": 0x05,
-    "BD": 0x06,
-    "ABc": 0x07,
-    "ABd": 0x08,
-    "ACb": 0x09,
-    "ACd": 0x0A,
-    "ADb": 0x0B,
-    "ADc": 0x0C,
-    "BCa": 0x0D,
-    "BCd": 0x0E,
-    "BDa": 0x0F,
-    "BDc": 0x10,
-    "CDa": 0x11,
-    "CDb": 0x12,
-    "Da": 0x13,
-    "Cb": 0x14,
-    "X": 0x15,
-    "tAD": 0x16,
-    "tBC": 0x17,
-    "tAB": 0x18,
-    "tCD": 0x19,
-    "tAC": 0x1A,
-    "tBD": 0x1B,
-
-    "tunnelA": 0x2B,
-    "tunnelB": 0x2C,
-    "tunnelC": 0x2D,
-    "tunnelD": 0x2E,
-
-    "wXyz": 0x30,
-    "t2": 0x31,
-    "t3": 0x32,
-    "t4": 0x33,
-    "t5": 0x34,
-    "t6": 0x35,
-    "t7": 0x36,
-    "t8": 0x37,
-    "t9": 0x38,
-    "t10": 0x39,
-    "t11": 0x3A,
-    "t12": 0x3B,
-    "t13": 0x3C,
-    "t14": 0x3D,
-    "t15": 0x3E,
-    "t16": 0x3F,
-    "t17": 0x40,
-    "t18": 0x41,
-    "t19": 0x2F,
-
-
-
-
-
-    "sAD": 0x80,
-    "sBC": 0x81,
-    "sBC2": 0x82,
-    "sBC3": 0x83,
-    
-    "tree1": 60,
-    "tree2": 61,
-    "tree3": 62
-
-  };
+class WorldMap {
   
-  this.tileIdx2name = {
-    0x00: "0",
-    0x01: "AD",
-    0x02: "BC",
-    0x03: "AB",
-    0x04: "CD",
-    0x05: "AC",
-    0x06: "BD",
-    0x07: "ABc",
-    0x08: "ABd",
-    0x09: "ACb",
-    0x0A: "ACd",
-    0x0B: "ADb",
-    0x0C: "ADc",
-    0x0D: "BCa",
-    0x0E: "BCd",
-    0x0F: "BDa",
-    0x10: "BDc",
-    0x11: "CDa",
-    0x12: "CDb",
-    0x13: "Da",
-    0x14: "Cb",
-    0x15: "X",
-    0x16: "tAD",
-    0x17: "tBC",
-    0x18: "tAB",
-    0x19: "tCD",
-    0x1A: "tAC",
-    0x1B: "tBD",
+  constructor() {
+    this.TILE_WIDTH_HALF = 128;
+    this.TILE_HEIGHT_HALF = 64;  
 
-    0x30: "wXyz",
-    0x31: "wxyZ",
-    0x32: "wXyZ",
-    0x33: "wxYz",
-    0x34: "t5",
-    0x35: "wxYZ",
-    0x36: "t7",
-    0x37: "Wxyz",
-    0x38: "WXyz",
-    0x39: "t10",
-    0x3A: "t11",
-    0x3B: "WxYz",
-    0x3C: "t13",
-    0x3D: "t14",
-    0x3E: "t15",
-    0x3F: "t16",
-    0x40: "t17",
-    0x41: "t18",
+    console.log(mapData2.tileName2idx);
 
-    0x2F: "wxyz",
+    this.tileChanges = mapData2.tileChanges;
 
-    0x2B: "tunnelA",
-    0x2C: "tunnelB",
-    0x2D: "tunnelC",
-    0x2E: "tunnelD",
+    this.tileName2idx = {
+      "0": 0x00,
+      "AD": 0x01,
+      "BC": 0x02,
+      "AB": 0x03,
+      "CD": 0x04,
+      "AC": 0x05,
+      "BD": 0x06,
+      "ABc": 0x07,
+      "ABd": 0x08,
+      "ACb": 0x09,
+      "ACd": 0x0A,
+      "ADb": 0x0B,
+      "ADc": 0x0C,
+      "BCa": 0x0D,
+      "BCd": 0x0E,
+      "BDa": 0x0F,
+      "BDc": 0x10,
+      "CDa": 0x11,
+      "CDb": 0x12,
+      "Da": 0x13,
+      "Cb": 0x14,
+      "X": 0x15,
+      "tAD": 0x16,
+      "tBC": 0x17,
+      "tAB": 0x18,
+      "tCD": 0x19,
+      "tAC": 0x1A,
+      "tBD": 0x1B,
 
-    0x80: "sAD",
-    0x81: "sBC",
-    0x82: "sBC1",
-    0x83: "sBC2",
+      "tunnelA": 0x2B,
+      "tunnelB": 0x2C,
+      "tunnelC": 0x2D,
+      "tunnelD": 0x2E,
 
-    60: "tree1",
-    61: "tree2",
-    62: "tree3"
-  };
+      "wXyz": 0x30,
+      "t2": 0x31,
+      "t3": 0x32,
+      "t4": 0x33,
+      "t5": 0x34,
+      "t6": 0x35,
+      "t7": 0x36,
+      "t8": 0x37,
+      "t9": 0x38,
+      "t10": 0x39,
+      "t11": 0x3A,
+      "t12": 0x3B,
+      "t13": 0x3C,
+      "t14": 0x3D,
+      "t15": 0x3E,
+      "t16": 0x3F,
+      "t17": 0x40,
+      "t18": 0x41,
+      "t19": 0x2F,
 
-  this.tileChanges = {
-    "ABc":"ACb",
-    "ACb":"BCa",
-    "BCa":"ABc",
-    "ABd":"ADb",
-    "ADb":"BDa",
-    "BDa":"ABd",
-    "ACd":"ADc",
-    "ADc":"CDa",
-    "CDa":"ACd",
-    "BCd":"BDc",
-    "BDc":"CDb",
-    "CDb":"BCd"    
-}
+      "sAD": 0x80,
+      "sBC": 0x81,
+      "sBC2": 0x82,
+      "sBC3": 0x83,
+      
+      "tree1": 60,
+      "tree2": 61,
+      "tree3": 62
+    };
+    
+    this.tileIdx2name = {
+      0x00: "0",
+      0x01: "AD",
+      0x02: "BC",
+      0x03: "AB",
+      0x04: "CD",
+      0x05: "AC",
+      0x06: "BD",
+      0x07: "ABc",
+      0x08: "ABd",
+      0x09: "ACb",
+      0x0A: "ACd",
+      0x0B: "ADb",
+      0x0C: "ADc",
+      0x0D: "BCa",
+      0x0E: "BCd",
+      0x0F: "BDa",
+      0x10: "BDc",
+      0x11: "CDa",
+      0x12: "CDb",
+      0x13: "Da",
+      0x14: "Cb",
+      0x15: "X",
+      0x16: "tAD",
+      0x17: "tBC",
+      0x18: "tAB",
+      0x19: "tCD",
+      0x1A: "tAC",
+      0x1B: "tBD",
 
-  this.NCOLS = split(data[0], ',').length;
-  this.NROWS = data.length;
+      0x30: "wXyz",
+      0x31: "wxyZ",
+      0x32: "wXyZ",
+      0x33: "wxYz",
+      0x34: "t5",
+      0x35: "wxYZ",
+      0x36: "t7",
+      0x37: "Wxyz",
+      0x38: "WXyz",
+      0x39: "t10",
+      0x3A: "t11",
+      0x3B: "WxYz",
+      0x3C: "t13",
+      0x3D: "t14",
+      0x3E: "t15",
+      0x3F: "t16",
+      0x40: "t17",
+      0x41: "t18",
 
-  this.tracks = tracks;
-  this.buildings = buildings;
-  this.cities = cities;
-  this.industries = industries;
-  this.trees = trees;
+      0x2F: "wxyz",
 
-  this.board = Array.from(Array(this.NROWS), () => new Array(this.NCOLS));
+      0x2B: "tunnelA",
+      0x2C: "tunnelB",
+      0x2D: "tunnelC",
+      0x2E: "tunnelD",
 
-  //this.fullImage = [];
-  //this.fullImage.push(createGraphics((this.NCOLS+this.NROWS) * TILE_WIDTH_HALF[0], 
-  //  (this.NCOLS+this.NROWS) * TILE_HEIGHT_HALF[0]));
-  // this.fullImage.push(createGraphics((this.NCOLS+this.NROWS) * TILE_WIDTH_HALF[1], 
-  //   (this.NCOLS+this.NROWS) * TILE_HEIGHT_HALF[1]));
-   
-  // populate map
-  for (const [row, txtLine] of data.entries()) {
-    for (const [col, elem] of split(txtLine, ',').entries()) {
-      this.board[row][col] = Number("0x" + elem);
+      0x80: "sAD",
+      0x81: "sBC",
+      0x82: "sBC1",
+      0x83: "sBC2",
+
+      60: "tree1",
+      61: "tree2",
+      62: "tree3"
+    };
+
+    this.NCOLS = split(mapData[0], ',').length;
+    this.NROWS = mapData.length;
+
+    this.tracks = tracksData;
+    this.buildings = buildingsData;
+    this.cities = citiesData;
+    this.industries = industryData;
+    this.trees = miscData;
+
+    this.board = Array.from(Array(this.NROWS), () => new Array(this.NCOLS));
+
+    //this.fullImage = [];
+    //this.fullImage.push(createGraphics((this.NCOLS+this.NROWS) * TILE_WIDTH_HALF[0], 
+    //  (this.NCOLS+this.NROWS) * TILE_HEIGHT_HALF[0]));
+    // this.fullImage.push(createGraphics((this.NCOLS+this.NROWS) * TILE_WIDTH_HALF[1], 
+    //   (this.NCOLS+this.NROWS) * TILE_HEIGHT_HALF[1]));
+    
+    // populate map
+    for (const [row, txtLine] of mapData.entries()) {
+      for (const [col, elem] of split(txtLine, ',').entries()) {
+        this.board[row][col] = Number("0x" + elem);
+      }
     }
   }
 
@@ -212,48 +199,48 @@ function WorldMap(data, tracks, buildings, cities, industries, trees) {
   //   //image(this.fullImage[1],-width/2,-height/2)   
   // }
 
-  this.screen2map = (screenX, screenY) => {
+  screen2map(screenX, screenY) {
     return createVector(
-      (screenX / TILE_WIDTH_HALF + screenY / TILE_HEIGHT_HALF) / 2, 
-      (screenY / TILE_HEIGHT_HALF - screenX / TILE_WIDTH_HALF) / 2
+      (screenX / this.TILE_WIDTH_HALF + screenY / this.TILE_HEIGHT_HALF) / 2, 
+      (screenY / this.TILE_HEIGHT_HALF - screenX / this.TILE_WIDTH_HALF) / 2
     );
   }
   
-  this.map2screen = (x, y) => {
+  map2screen(x, y) {
     return createVector(
-      (x - y) * TILE_WIDTH_HALF,
-      (x + y) * TILE_HEIGHT_HALF
+      (x - y) * this.TILE_WIDTH_HALF,
+      (x + y) * this.TILE_HEIGHT_HALF
     );
   }
   
 
-  this.idx2map = (idx) => {
+  idx2map(idx) {
     return createVector(floor(idx / this.NCOLS), idx % this.NCOLS);
   }
   
-  this.map2idx = (pos) => {
+  map2idx(pos) {
     return pos.y * this.NCOLS + pos.x;
   }
 
-  this.changeTile = (row, col) => {
+  changeTile(row, col) {
     let tileName = this.tileIdx2name[this.board[row][col]];
     if (tileName in this.tileChanges) {
       let val = this.tileName2idx[this.tileChanges[tileName]];
       this.board[row][col] = val;
       return true;
     }
-    return false;
-    
+    return false;    
   }
 
-  this.drawTile = (canvas, row, col, cameraPos) => {
-    screenPos = this.map2screen(col, row);
+  drawTile(canvas, row, col, cameraPos) {
+    let screenPos = this.map2screen(col, row);
     screenPos.sub(cameraPos);
     screenPos.add(canvas.width/2, canvas.height/2);
-    if (screenPos.x < -TILE_WIDTH_HALF ||
-        screenPos.y < -TILE_HEIGHT_HALF || 
-        screenPos.x > canvas.width + TILE_WIDTH_HALF || 
-        screenPos.y > canvas.height + TILE_HEIGHT_HALF) {
+
+    if (screenPos.x < -this.TILE_WIDTH_HALF ||
+        screenPos.y < -this.TILE_HEIGHT_HALF || 
+        screenPos.x > canvas.width + this.TILE_WIDTH_HALF || 
+        screenPos.y > canvas.height + this.TILE_HEIGHT_HALF) {
       return;
     }
 
@@ -300,7 +287,7 @@ function WorldMap(data, tracks, buildings, cities, industries, trees) {
     //canvas.text(`${col}, ${row}`, screenPos.x, screenPos.y)
   }
 
-  this.show = (canvas, cameraPos) => {
+  show(canvas, cameraPos) {
     // for(let row=0; row<this.NROWS; row++) {
     //   for(let col=0; col<this.NCOLS; col++) {
     //     this.drawTile(canvas, row, col, cameraPos);
@@ -346,7 +333,7 @@ function WorldMap(data, tracks, buildings, cities, industries, trees) {
     // canvas.line(canvas.width/2, 0, canvas.width/2, canvas.height);
   }
 
-  this.processClick = (mouseX, mouseY, cameraPos) => {
+  processClick(mouseX, mouseY, cameraPos) {
     
     let aux = this.screen2map(mouseX+cameraPos.x, mouseY+cameraPos.y, cameraPos.z);
     console.log(round(aux.x), round(aux.y))

@@ -21,12 +21,13 @@ let cameraPos;
 // data from json files
 let locomotiveData = {};
 let mapData;
+let mapData2 = {};
 let tracksData = {};
 let roadsData = {};
 let buildingsData = {};
 let citiesData = {};
 let hudData = {};
-let trWagonData = {};
+let wagonsData = {};
 let industryData = {};
 let resourceData = {};
 let miscData = {};
@@ -35,6 +36,7 @@ let tileChangesData;
 
 let locomotive;
 let worldMap;
+let cities = {};
 
 let mainCanvas, hudCanvas;
 let hud;
@@ -42,27 +44,12 @@ let hud;
 let currentTime = new Date(1549312452 * 1000);
 let currentCity, currentScene;
 
+let navigation;
+
 
 let backgroundImg, combatImg;
 
 let events;
-
-//let scenes = ("Navigation", "CityTrade", "WagonTrade", "Combat");
-
-// let events = {
-//   "13,16": 10,  // mine  
-//   "7,2": 11,  // mine2  
-  
-//   "9,22": "Taoudeni",   
-//   "5,10": "Marrakesh",    
-//   "5,8": "Casablanca",    
-//   "0,0": "Rhum",
-//   "12,2": "Granada",    
-//   "24,15": "Rome",    
-//   "28,2": "Tibesti",    
-//   "28,17": "Istanbul",    
-//   "28,13": "In Salah",      
-// };
 
 function preload() {
   loadJSON("resources/allResources.json", jsonData => {
@@ -120,13 +107,17 @@ function preload() {
     }
 
     // - Wagons
-    trWagonData = jsonData.wagons;
+    wagonsData = jsonData.wagons;
     for (const [key, val] of Object.entries(jsonData.wagons)) {
-      trWagonData[key] = val;
-      trWagonData[key].img = [];
+      wagonsData[key] = val;
+      wagonsData[key].img = [];
       for (let filename of val.files) {
-        trWagonData[key].img.push(loadImage(filename));
+        wagonsData[key].img.push(loadImage(filename));
       }
+    }
+
+    for (const [key, val] of Object.entries(jsonData.map)) {
+      mapData2[key] = val;    
     }
 
   });
@@ -189,14 +180,13 @@ function initialize() {
   mainCanvas.background(0);
 
   populateBackgroundImages();
+
+  for (const [key, val] of Object.entries(citiesData)) {
+    cities[key] = new City(val);
+  }
 }
 
 function setup() {  
-  // noLoop();
-  // createCanvas(1900, 900);
-  // mainCanvas = createGraphics(1900, 840);
-  // hudCanvas = createGraphics(1900, 60);  
-
   createCanvas(1900, 1060);
   mainCanvas = createGraphics(width, height-60);
   hudCanvas = createGraphics(width, 60);  
@@ -204,30 +194,14 @@ function setup() {
   initialize();  
   background(100);
   
-  hud = new Hud(hudData);
-  worldMap = new WorldMap(mapData, tracksData, buildingsData, citiesData, industryData, miscData);
+  hud = new Hud();
+  worldMap = new WorldMap();
   let aux = worldMap.map2screen(0, 2);
   cameraPos.set(aux.x, aux.y);
 
-  locomotive = new Locomotive(createVector(0, 2), 270.0, trWagonData); 
-  locomotive.addWagon("Locomotive");  // 0
-  locomotive.addWagon("Tender");      // 1
-  locomotive.addWagon("Livestock");   // 2
-  locomotive.addWagon("Oil");         // 3
-  locomotive.addWagon("Iron");        // 4
-  locomotive.addWagon("Copper");      // 5
-  locomotive.addWagon("Wood");        // 6
-  locomotive.addWagon("Container");   // 7
-  locomotive.addWagon("Drill");       // 8
+  locomotive = new Locomotive(createVector(0, 2), 270.0); 
 
-  // locomotive.wagons[1].addResource(2);
-  // locomotive.wagons[3].addResource(2);
-  locomotive.wagons[4].addResource(1500);
-  locomotive.wagons[5].addResource(1500);
-  locomotive.wagons[6].addResource(0);
-  locomotive.wagons[7].addResource(0);
-  // locomotive.wagons[8].addResource(4);
-  
+  navigation = new Navigation();
 
   currentScene = "Navigation";
   // currentScene = "CityTrade";
@@ -239,9 +213,7 @@ function setup() {
 
   switch(currentScene) {
     case("Navigation"):
-      worldMap.show(mainCanvas, cameraPos);
-      locomotive.show(mainCanvas, cameraPos, locomotiveData, worldMap);
-      hud.show(hudCanvas);
+      navigation.show()
     break;
     case("CityTrade"):
       currentCity.show(mainCanvas, locomotive);
@@ -254,6 +226,7 @@ function setup() {
     break;
   };
 
+  hud.show(hudCanvas);
   image(mainCanvas, 0, 0);
   image(hudCanvas, 0, height-60);
 }
@@ -265,49 +238,13 @@ function redrawMap() {
 
 function draw() {  
   mainCanvas.background(0);
-  hud.tick();
+  //hud.tick();
   //hud.update(locomotive.gear, locomotive.gold, round(locomotive.fuel), round(locomotive.velocity.mag()*10000));
   
   switch(currentScene) {
     case("Navigation"):
-      locomotive.update(worldMap);
-      //let aux = worldMap.map2screen(locomotive.position.x, locomotive.position.y, 2);
-      //cameraPos.set(aux.x, aux.y)
-      
-      if (locomotive.enteredNewTile(2)) {   // check front sensor
-        let tileString = String(locomotive.currentTileFrontSensor.x) + "," + String(locomotive.currentTileFrontSensor.y);
-        
-        if (tileString in events) {
-          console.log("Event", events[tileString]);
-          locomotive.inmediateStop();
-          locomotive.turn180(worldMap);
-          if (events[tileString] == "Mine") {  // mine
-            currentScene = "Mine";
-            //hud.showMine();
-
-          } else {
-            currentCity = new ScnCityTrade(citiesData[events[tileString]], industryData, roadsData, buildingsData, backgroundImg);
-            currentScene = "CityTrade";
-          }
-        } else {
-          locomotive.checkFrontSensor(worldMap);
-        }
-
-      } else if (locomotive.enteredNewTile(1)) {   // check central sensor
-        locomotive.newOrientation(worldMap);
-        
-        // let tileString = String(locomotive.currentTile.x) + "," + String(locomotive.currentTile.y);
-        
-        // if (tileString in events) {
-        //   console.log("Arrived to a city");
-        //   //locomotive.stop();          
-        //   //currentCity = new ScnCityTrade(citiesData[events[tileIdx]], industryData, roadsData, buildingsData, backgroundImg);
-        //   //currentScene = "CityTrade";
-        // }
-      }
-      worldMap.show(mainCanvas, cameraPos);
-      locomotive.show(mainCanvas, cameraPos, locomotiveData, worldMap);
-      
+      navigation.update();
+      navigation.show();
     break;
     case("CityTrade"):
       currentCity.update(locomotive);  

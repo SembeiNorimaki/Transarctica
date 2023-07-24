@@ -14,27 +14,29 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-function Hud() {
-  this.months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  this.currentTime = new Date(3102441200 * 1000);
-  // this.fuel = 1000;
-  // this.speed = 0;
-  // this.gold = 500;
-  // this.gear = "N";
-  this.status = "normal";
+class Hud {
+  constructor() {
+    this.months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    this.currentTime = new Date(3102441200 * 1000);
+    // this.fuel = 1000;
+    // this.speed = 0;
+    // this.gold = 500;
+    // this.gear = "N";
+    this.status = "normal";
 
+    
+    this.buttons = [
+      new ClickableRegion(createVector(80, 30), [100, 40], [hudData.frame, hudData.button_find], ""),
+      new ClickableRegion(createVector(80+140, 30), [100, 40], [hudData.frame, hudData.button_book], ""),
+      new ClickableRegion(createVector(80+2*140, 30), [100, 40], [hudData.frame, hudData.button_map], "")
+    ]
+  }
   
-  this.buttons = [
-    new ClickableRegion(createVector(80, 30), [100, 40], [hudData.frame, hudData.button_find], ""),
-    new ClickableRegion(createVector(80+140, 30), [100, 40], [hudData.frame, hudData.button_book], ""),
-    new ClickableRegion(createVector(80+2*140, 30), [100, 40], [hudData.frame, hudData.button_map], "")
-  ]
-  
-  this.showMine = () => {
+  showMine() {
     this.status = "mine";
   }
 
-  this.show = (canvas) => {
+  show(canvas) {
     if (this.status == "mine") {
       canvas.text("hello", canvas.width, canvas.height-30);
       return;
@@ -74,7 +76,7 @@ function Hud() {
   //   this.speed = speed;
   // }
 
-  this.processClick = (x, y) => {
+  processClick(x, y) {
     let idx = 1;
     for (let button of this.buttons) {
       if (button.gotClicked(x, y)) {
@@ -84,7 +86,7 @@ function Hud() {
     }
   }
 
-  this.tick = () => {
+  tick() {
     this.currentTime.setMinutes(this.currentTime.getMinutes() + 1);
   }  
 }

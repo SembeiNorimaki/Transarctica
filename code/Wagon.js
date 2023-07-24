@@ -14,35 +14,37 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-function Wagon(id, name, wagonData) {
-  this.id = id;
-  this.name = name;
-  //this.displayName = name;
+class Wagon {
+  constructor(id, name, wagonData) {
+    this.id = id;
+    this.name = name;
+    //this.displayName = name;
+    
+    this.img = wagonData.img;
+    this.halfSize = [wagonData.img[0].width/2, wagonData.img[0].height/2];
+    this.units = wagonData.units;
+    this.offsety = wagonData.offsety;
+    this.capacity = wagonData.capacity;
+    this.resourceName = wagonData.cargo;
+    this.weight = wagonData.weight;
+    this.usedSpace = 0;
+    this.availableSpace = this.capacity;
+    this.spriteId = 0;
+    this.hitpointsLeft = 50;
+    this.hitpoints = 150;
+    this.pos = createVector(0, 800);
+    this.vel = createVector(0.0, 0.0);
+  }
   
-  this.img = wagonData.img;
-  this.halfSize = [wagonData.img[0].width/2, wagonData.img[0].height/2];
-  this.units = wagonData.units;
-  this.offsety = wagonData.offsety;
-  this.capacity = wagonData.capacity;
-  this.resourceName = wagonData.cargo;
-  this.weight = wagonData.weight;
-  this.usedSpace = 0;
-  this.availableSpace = this.capacity;
-  this.spriteId = 0;
-  this.hitpointsLeft = 50;
-  this.hitpoints = 150;
-  this.pos = createVector(0, 800);
-  this.vel = createVector(0.0, 0.0);
-  
-  this.setVel = (newVel) => {
+  setVel(newVel) {
     this.vel.set(newVel);
   }
 
-  this.setPos = (newPos) => {
+  setPos(newPos) {
     this.pos.set(newPos);
   }
 
-  this.recalculateSpriteId = () => {
+  recalculateSpriteId() {
     if (this.usedSpace == 0) {
       this.spriteId = 0;
     } else if (this.availableSpace == 0) {
@@ -52,7 +54,7 @@ function Wagon(id, name, wagonData) {
     }
   }
 
-  this.addResource = (qty) => {
+  addResource(qty) {
     if (qty > this.availableSpace) {
       throw "Not enough space";
     }
@@ -61,7 +63,7 @@ function Wagon(id, name, wagonData) {
     this.recalculateSpriteId();
   }
   
-  this.removeResource = (qty) => {
+  removeResource(qty) {
     if (qty > this.usedSpace) {
       throw "Not enough resources";
     }
@@ -70,7 +72,7 @@ function Wagon(id, name, wagonData) {
     this.recalculateSpriteId(); 
   }
 
-  this.showHorizontal = (canvas) => {
+  showHorizontal(canvas) {
     this.showHorizontal2(canvas, this.pos)
     // canvas.imageMode(CORNER)
     // canvas.image(this.img[this.spriteId], this.pos.x, this.pos.y - this.offsety[this.spriteId]);
@@ -81,13 +83,13 @@ function Wagon(id, name, wagonData) {
     // canvas.imageMode(CENTER)  
   }
 
-  this.showHorizontal2 = (canvas, pos) => {
+  showHorizontal2(canvas, pos) {
     canvas.imageMode(CORNER)
     canvas.image(this.img[this.spriteId], pos.x, pos.y - this.offsety[this.spriteId]);
     canvas.imageMode(CENTER)  
   }
 
-  this.update = () => {  
+  update() {  
     this.pos.add(this.vel);  
   } 
 }

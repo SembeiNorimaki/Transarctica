@@ -14,70 +14,90 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-function Locomotive(pos, orientation, wagonsData) {
-  // position of the locomotive in a 2d map, with decimals
-  this.position = pos;
-  this.prevPosition = pos.copy();
-  // orientation in a 2d map, in degrees, from 0 to 360
-  this.orientation = orientation;
-  this.prevOrientation = 0.0;
-  this.wagonsData = wagonsData;
+class Locomotive {
+  constructor(pos, orientation) {
+    // position of the locomotive in a 2d map, with decimals
+    this.position = pos;
+    this.prevPosition = pos.copy();
+    // orientation in a 2d map, in degrees, from 0 to 360
+    this.orientation = orientation;
+    this.prevOrientation = 0.0;
+    this.wagonsData = wagonsData;
 
-  this.frontSensor = createVector(0.4, 0).setHeading(radians(this.orientation)).add(this.position);
+    this.frontSensor = createVector(0.4, 0).setHeading(radians(this.orientation)).add(this.position);
 
-  this.screenPos = createVector(0, 0);
-  this.currentTile = this.position.copy();
-  this.prevTile = this.currentTile.copy();
+    this.screenPos = createVector(0, 0);
+    this.currentTile = this.position.copy();
+    this.prevTile = this.currentTile.copy();
 
-  this.currentTileFrontSensor = createVector(round(this.frontSensor.x), round(this.frontSensor.y));
-  this.prevTileFrontSensor = createVector(round(this.frontSensor.x), round(this.frontSensor.y));
+    this.currentTileFrontSensor = createVector(round(this.frontSensor.x), round(this.frontSensor.y));
+    this.prevTileFrontSensor = createVector(round(this.frontSensor.x), round(this.frontSensor.y));
+    
+    this.acceleration = createVector(0.0002, 0).setHeading(radians(this.orientation));
+    this.braking = createVector(0.001, 0);  
+    this.velocity = createVector(0.0, 0.0);
+    this.spriteIdx = 0;
+    this.running = false;
+    this.spriteSpeed = 6;
+    this.bg;
+
+    this.wagons = [];
+
+    this.maxVelocity = 0.03;
+
+    this.gear = "N";  // Neutral, Direct
+    this.gold = 5000;
+    this.fuel = 1000;
+
+    this.capacity = {
+      "Coal": 0,
+      "Iron": 0,
+      "Copper": 0,
+      "Oil": 0,
+      "Livestock": 0,
+      "Wood": 0,
+      "Container": 0
+    }
+
+    this.usedSpace = {
+      "Coal": 0,
+      "Iron": 0,
+      "Copper": 0,
+      "Oil": 0,
+      "Livestock": 0,
+      "Wood": 0,
+      "Container": 0
+    }
+
+    this.defaultInitialization();
+  }
   
-  
-  this.acceleration = createVector(0.0002, 0).setHeading(radians(this.orientation));
-  this.braking = createVector(0.001, 0);  
-  this.velocity = createVector(0.0, 0.0);
-  this.spriteIdx = 0;
-  this.running = false;
-  this.spriteSpeed = 6;
-  this.bg;
+  defaultInitialization() {
+    this.addWagon("Locomotive");  // 0
+    this.addWagon("Tender");      // 1
+    this.addWagon("Livestock");   // 2
+    this.addWagon("Oil");         // 3
+    this.addWagon("Iron");        // 4
+    this.addWagon("Copper");      // 5
+    this.addWagon("Wood");        // 6
+    this.addWagon("Container");   // 7
+    this.addWagon("Drill");       // 8
 
-  this.wagons = [];
-
-  this.maxVelocity = 0.03;
-
-  this.gear = "N";  // Neutral, Direct
-  this.gold = 5000;
-  this.fuel = 1000;
-
-  this.capacity = {
-    "Coal": 0,
-    "Iron": 0,
-    "Copper": 0,
-    "Oil": 0,
-    "Livestock": 0,
-    "Wood": 0,
-    "Container": 0
+    this.wagons[3].addResource(100);
+    this.wagons[4].addResource(1500);
+    this.wagons[5].addResource(1500);
+    this.wagons[6].addResource(100);
+    this.wagons[7].addResource(2);    
   }
 
-  this.usedSpace = {
-    "Coal": 0,
-    "Iron": 0,
-    "Copper": 0,
-    "Oil": 0,
-    "Livestock": 0,
-    "Wood": 0,
-    "Container": 0
-  }
-  
-
-  this.addWagon = (wagonType) => {    
+  addWagon(wagonType) {    
     let newWagon = new Wagon(1, wagonType, this.wagonsData[wagonType]);
     this.wagons.push(newWagon);
     // update train capacities
     this.capacity[wagonType] += newWagon.capacity;
   } 
  
-  this.buyResource = (resourceName, qty, price) => {
+  buyResource(resourceName, qty, price) {
     if (price > this.gold) {
       throw("Not enough gold");
     }
@@ -98,7 +118,7 @@ function Locomotive(pos, orientation, wagonsData) {
     throw("No available space in train");
   }
 
-  this.sellResource = (wagon, qty, price) => {
+  sellResource(wagon, qty, price) {
     try {
       wagon.removeResource(qty);
     } catch (err) {
@@ -107,7 +127,7 @@ function Locomotive(pos, orientation, wagonsData) {
     this.gold += price;
   }
 
-  this.showHorizontalTrain = (canvas, xpos, ypos) => {
+  showHorizontalTrain(canvas, xpos, ypos) {
     this.wagons[0].setPos(createVector(xpos, ypos));
     this.wagons[0].showHorizontal(canvas);
       
@@ -121,7 +141,7 @@ function Locomotive(pos, orientation, wagonsData) {
     }
   }
 
-  this.clickHorizontalTrain = (currentX, x, y) => {
+  clickHorizontalTrain(currentX, x, y) {
     let idx = 0;
     if (x > currentX) { 
       return idx;
@@ -136,17 +156,17 @@ function Locomotive(pos, orientation, wagonsData) {
     return -1;
   }
 
-  this.show = (canvas, cameraPos, imgData, worldMap) => {    
-    this.screenPos = worldMap.map2screen(this.position.x, this.position.y, cameraPos.z);
+  show(canvas, cameraPos) { 
+    this.screenPos = worldMap.map2screen(this.position.x, this.position.y);
     this.screenPos.add(-cameraPos.x,  -cameraPos.y);
     this.screenPos.add(canvas.width/2, canvas.height/2);
     this.screenPos.add([
-      imgData[this.orientation].offset[0],
-      imgData[this.orientation].offset[1] 
+      locomotiveData[this.orientation].offset[0],
+      locomotiveData[this.orientation].offset[1] 
     ]);
     
 
-    canvas.image(imgData[this.orientation.toString()].imgList[this.spriteIdx], this.screenPos.x, this.screenPos.y);
+    canvas.image(locomotiveData[this.orientation.toString()].imgList[this.spriteIdx], this.screenPos.x, this.screenPos.y);
     //canvas.circle(this.screenPos.x, this.screenPos.y, 5);
 
     //this.screenPos = worldMap.map2screen(this.frontSensor.x, this.frontSensor.y, cameraPos.z);
@@ -157,19 +177,19 @@ function Locomotive(pos, orientation, wagonsData) {
 
   }
 
-  this.start = () => {
+  start() {
     this.gear = "D";
   }
 
-  this.stop = () => {
+  stop() {
     this.gear = "N";
   }
-  this.inmediateStop = () => {
+  inmediateStop() {
     this.gear = "N";
     this.velocity.setMag(0.0);
   }
 
-  this.startStop = () => {
+  startStop() {
     if (this.gear == "N") {
       this.start();
     } else {
@@ -177,15 +197,15 @@ function Locomotive(pos, orientation, wagonsData) {
     }    
   }
 
-  this.turn180 = (worldMap) => {
+  turn180() {
     if (this.velocity.mag() == 0) {
       this.orientation =  (this.orientation + 180) % 360;
       this.acceleration.setHeading(radians(this.orientation));
-      this.update(worldMap);
+      this.update();
     }
   }
   
-  this.checkFrontSensor = (worldMap) => {
+  checkFrontSensor() {
     let deltaX = this.currentTileFrontSensor.x - this.prevTileFrontSensor.x;
     let deltaY = this.currentTileFrontSensor.y - this.prevTileFrontSensor.y;
     let tileName = "";
@@ -207,7 +227,7 @@ function Locomotive(pos, orientation, wagonsData) {
     }
   }
 
-  this.newOrientation = (worldMap) => {
+  newOrientation() {
     //console.log(worldMap.tileIdx2name[worldMap.board[this.currentTile.y][this.currentTile.x]]);
     // stations make the train stop
     // if ([0x81, 0x82].includes(worldMap.board[this.currentTile.y][this.currentTile.x])) {
@@ -292,7 +312,7 @@ function Locomotive(pos, orientation, wagonsData) {
 
   }
 
-  this.enteredNewTile = (sensorId) => {
+  enteredNewTile(sensorId) {
     if (sensorId == 1)  { // center sensor
       return !this.currentTile.equals(this.prevTile);
     } else if (sensorId == 2) {
@@ -300,7 +320,7 @@ function Locomotive(pos, orientation, wagonsData) {
     }
   }
 
-  this.update = (worldMap) => {
+  update() {
     if (this.gear == "D") {
       this.velocity.add(this.acceleration);      
       if (this.velocity.mag() > this.maxVelocity)
