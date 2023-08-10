@@ -15,7 +15,7 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 class Locomotive {
-  constructor(pos, orientation) {
+  constructor(pos, orientation, isEnemy=0) {
     // position of the locomotive in a 2d map, with decimals
     this.position = pos;
     this.prevPosition = pos.copy();
@@ -68,8 +68,13 @@ class Locomotive {
       "Wood": 0,
       "Container": 0
     }
+    if (isEnemy) {
+      this.defaultEnemy();
 
-    this.defaultInitialization();
+    } else {
+      this.defaultInitialization();
+    }
+    
   }
   
   defaultInitialization() {
@@ -81,13 +86,23 @@ class Locomotive {
     this.addWagon("Copper");      // 5
     this.addWagon("Wood");        // 6
     this.addWagon("Container");   // 7
-    this.addWagon("Drill");       // 8
+    
 
-    this.wagons[3].addResource(100);
+    this.wagons[3].addResource(0);
     this.wagons[4].addResource(1500);
     this.wagons[5].addResource(1500);
-    this.wagons[6].addResource(100);
-    this.wagons[7].addResource(2);    
+    this.wagons[6].addResource(0);
+    this.wagons[7].addResource(0);    
+  }
+
+  defaultEnemy() {
+    this.addWagon("Locomotive_vu");  // 0
+    this.addWagon("Tender_vu");  // 1
+    this.addWagon("Livestock_vu");  // 1
+    this.addWagon("Cannon_vu");  // 1
+    this.addWagon("Machinegun_vu");  // 
+    this.addWagon("Barracks_vu");  // 1
+  
   }
 
   addWagon(wagonType) {    

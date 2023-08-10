@@ -20,8 +20,6 @@ class WorldMap {
     this.TILE_WIDTH_HALF = 128;
     this.TILE_HEIGHT_HALF = 64;  
 
-    console.log(mapData2.tileName2idx);
-
     this.tileChanges = mapData2.tileChanges;
 
     this.tileName2idx = {
@@ -165,6 +163,7 @@ class WorldMap {
     this.trees = miscData;
 
     this.board = Array.from(Array(this.NROWS), () => new Array(this.NCOLS));
+    this.heightmap = Array.from(Array(this.NROWS), () => new Array(this.NCOLS));
 
     //this.fullImage = [];
     //this.fullImage.push(createGraphics((this.NCOLS+this.NROWS) * TILE_WIDTH_HALF[0], 
@@ -176,6 +175,12 @@ class WorldMap {
     for (const [row, txtLine] of mapData.entries()) {
       for (const [col, elem] of split(txtLine, ',').entries()) {
         this.board[row][col] = Number("0x" + elem);
+      }
+    }
+    // populate heightmap
+    for (const [row, txtLine] of heightData.entries()) {
+      for (const [col, elem] of split(txtLine, ',').entries()) {
+        this.heightmap[row][col] = Number("0x" + elem);
       }
     }
   }
@@ -244,17 +249,93 @@ class WorldMap {
       return;
     }
 
+    
+
     try {  
       // if (this.board[row][col] == 0x00 ) {
       //   canvas.image(this.tracks["0"].img, screenPos.x, screenPos.y);
       //   canvas.image(this.trees["tree1"], screenPos.x, screenPos.y);
       // } 
-      if (this.board[row][col] == 0x60) {
-        canvas.image(this.tracks["0"].img, screenPos.x, screenPos.y);
-        canvas.image(this.trees["tree1"], screenPos.x-50, screenPos.y-50);  
-      } else if (this.board[row][col] == 0x61) {
-        canvas.image(this.tracks["0"].img, screenPos.x, screenPos.y);
-        canvas.image(this.trees["tree2"], screenPos.x-50, screenPos.y-90);
+
+      let heightTile = this.heightmap[row][col] % 0x10;
+      let currentHeight = int(this.heightmap[row][col] / 0x10);
+
+      if (heightTile == 0x00) {
+        if (currentHeight == 0) {
+          canvas.image(this.tracks["water"].img, screenPos.x, screenPos.y);
+          //return
+        } else {
+          canvas.image(this.tracks["0"].img, screenPos.x, screenPos.y-currentHeight*32);
+        }
+      } else if (heightTile == 0x01) {
+        if (currentHeight == 0)
+          canvas.image(this.tracks["waterN"].img, screenPos.x, screenPos.y-16-currentHeight*32);
+        else
+          canvas.image(this.tracks["wxyZ"].img, screenPos.x, screenPos.y-16-currentHeight*32);
+      } else if (heightTile == 0x08) {
+        if (currentHeight == 0)
+          canvas.image(this.tracks["waterS"].img, screenPos.x, screenPos.y-16-currentHeight*32);
+        else
+          canvas.image(this.tracks["Wxyz"].img, screenPos.x, screenPos.y-16-currentHeight*32);
+      } else if (heightTile == 0x03) {
+        if (currentHeight == 0)
+          canvas.image(this.tracks["waterE"].img, screenPos.x, screenPos.y-currentHeight*32);
+        else
+          canvas.image(this.tracks["wXyz"].img, screenPos.x, screenPos.y-currentHeight*32);
+      } else if (heightTile == 0x06) {
+        if (currentHeight == 0)
+          canvas.image(this.tracks["waterW"].img, screenPos.x, screenPos.y-currentHeight*32);
+        else
+          canvas.image(this.tracks["wxYz"].img, screenPos.x, screenPos.y-currentHeight*32);
+      } else if (heightTile == 0x02) {
+        canvas.image(this.tracks["wXyZ"].img, screenPos.x, screenPos.y-16-currentHeight*32);
+      } else if (heightTile == 0x04) {
+        canvas.image(this.tracks["wxYZ"].img, screenPos.x, screenPos.y-16-currentHeight*32);
+      } else if (heightTile == 0x05) {
+        canvas.image(this.tracks["WXyz"].img, screenPos.x, screenPos.y-16-currentHeight*32);
+      } else if (heightTile == 0x07) {
+        canvas.image(this.tracks["WxYz"].img, screenPos.x, screenPos.y-16-currentHeight*32);
+      } else if (heightTile == 0x09) {
+        canvas.image(this.tracks["wXYZ"].img, screenPos.x, screenPos.y+16-currentHeight*32);
+      } else if (heightTile == 0x0A) {
+        canvas.image(this.tracks["WXyZ"].img, screenPos.x, screenPos.y-currentHeight*32);
+      } else if (heightTile == 0x0B) {
+        canvas.image(this.tracks["WxYZ"].img, screenPos.x, screenPos.y-currentHeight*32);
+      } else if (heightTile == 0x0C) {
+        canvas.image(this.tracks["WXYz"].img, screenPos.x, screenPos.y+16-currentHeight*32);
+      } 
+      // return;
+
+      // else if (this.heightmap[row][col] == 0x10) {
+      //     canvas.image(this.tracks["0"].img, screenPos.x, screenPos.y-32);
+      //     return;
+      // }
+
+      if (this.board[row][col] == 0x01) {
+        canvas.image(this.tracks[this.tileIdx2name[this.board[row][col]]].img, screenPos.x, screenPos.y - currentHeight*32);
+      } else if (this.board[row][col] == 0x02) {
+        canvas.image(this.tracks[this.tileIdx2name[this.board[row][col]]].img, screenPos.x, screenPos.y - currentHeight*32);
+      } else if (this.board[row][col] == 0x03) {
+        canvas.image(this.tracks[this.tileIdx2name[this.board[row][col]]].img, screenPos.x, screenPos.y - 32-currentHeight*32);
+      } else if (this.board[row][col] == 0x04) {
+        canvas.image(this.tracks[this.tileIdx2name[this.board[row][col]]].img, screenPos.x, screenPos.y+32-currentHeight*32);
+      } else if (this.board[row][col] == 0x05) {
+        canvas.image(this.tracks[this.tileIdx2name[this.board[row][col]]].img, screenPos.x-64, screenPos.y - currentHeight*32);
+      } else if (this.board[row][col] == 0x06) {
+        canvas.image(this.tracks[this.tileIdx2name[this.board[row][col]]].img, screenPos.x+64, screenPos.y - currentHeight*32);
+      } else if (this.board[row][col] >= 0x07 && this.board[row][col] <= 0x12) {
+        canvas.image(this.tracks[this.tileIdx2name[this.board[row][col]]].img, screenPos.x, screenPos.y - currentHeight-32);
+      }      
+      else if (this.board[row][col] == 0x2D) {
+        canvas.image(this.tracks[this.tileIdx2name[this.board[row][col]]].img, screenPos.x, screenPos.y - 14-currentHeight*32);
+      }
+
+
+
+      else if (this.board[row][col] == 0x60) {
+        canvas.image(this.trees["tree1"], screenPos.x-50, screenPos.y-50-currentHeight*32);  
+      } else if (this.board[row][col] == 0x61) {        
+        canvas.image(this.trees["tree2"], screenPos.x-50, screenPos.y-90 - currentHeight*32);
       } else if (this.board[row][col] == 0x62) {
         canvas.image(this.tracks["0"].img, screenPos.x, screenPos.y);
         canvas.image(this.trees["tree3"], screenPos.x-50, screenPos.y-80);
@@ -270,14 +351,13 @@ class WorldMap {
         canvas.image(this.tracks["0"].img, screenPos.x, screenPos.y);
         canvas.image(this.industries["q"].img, screenPos.x, screenPos.y-15); 
       } else if (this.board[row][col] >= 0x40) {    // stations AD
-        canvas.image(this.tracks["0"].img, screenPos.x, screenPos.y);
-        canvas.image(this.buildings[(this.board[row][col]-0x40).toString()].img, screenPos.x-28, screenPos.y-15); 
+        canvas.image(this.buildings[(this.board[row][col]-0x40).toString()].img, screenPos.x, screenPos.y - 32 * currentHeight); 
       } else if ([0x31, 0x32, 0x35, 0x37, 0x38, 0x3B, 0x2D].includes(this.board[row][col])) {
         canvas.image(this.tracks[this.tileIdx2name[this.board[row][col]]].img, screenPos.x, screenPos.y-16);
       } else if (this.board[row][col] == 0x2F) {
         canvas.image(this.tracks[this.tileIdx2name[this.board[row][col]]].img, screenPos.x, screenPos.y-32);
-      } else {
-        canvas.image(this.tracks[this.tileIdx2name[this.board[row][col]]].img, screenPos.x, screenPos.y);
+      } else if (this.board[row][col] != 0x00){
+        canvas.image(this.tracks[this.tileIdx2name[this.board[row][col]]].img, screenPos.x, screenPos.y - currentHeight);
       }
     } catch (error) {
       //console.log(error)
@@ -294,11 +374,17 @@ class WorldMap {
     //   }
     // }
 
+    //console.log(this.NCOLS, this.NROWS)
     let aux = this.screen2map(cameraPos.x, cameraPos.y)
     let xx = 8;
     let yy = 8;
-    for(let row=aux.y-yy; row<=aux.y+yy; row++) {
-      for(let col=aux.x-xx; col<=aux.x+xx; col++) {
+    let rowmin = Math.max(aux.y-yy, 0);
+    let rowmax = Math.min(aux.y+yy, this.NROWS-1);
+    let colmin = Math.max(aux.x-xx, 0);
+    let colmax = Math.min(aux.x+xx, this.NCOLS-1);
+
+    for(let row=rowmin; row<=rowmax; row++) {
+      for(let col=colmin; col<=colmax; col++) {
         this.drawTile(canvas, int(row), int(col), cameraPos);
       }
     }

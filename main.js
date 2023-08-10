@@ -21,6 +21,7 @@ let cameraPos;
 // data from json files
 let locomotiveData = {};
 let mapData;
+let heightData;
 let mapData2 = {};
 let tracksData = {};
 let roadsData = {};
@@ -31,10 +32,12 @@ let wagonsData = {};
 let industryData = {};
 let resourceData = {};
 let miscData = {};
+let soldierData = {};
+let combatData = {};
 let tileChangesData;
 
 
-let locomotive;
+let locomotive, enemy;
 let worldMap;
 let cities = {};
 
@@ -56,7 +59,8 @@ function preload() {
 
     citiesData = jsonData.cities;
     tileChangesData = jsonData.tileChanges;
-    mapData = loadStrings('resources/maps/map_small.txt');
+    mapData = loadStrings('resources/maps/map_small_copy.txt');
+    heightData = loadStrings('resources/maps/map_small_heightmap.txt');
     resourceData = jsonData.resources;
     events = jsonData.events;
 
@@ -68,6 +72,14 @@ function preload() {
     // - HUD
     for (const [key, val] of Object.entries(jsonData.hud)) {
       hudData[key] = loadImage(`resources/hud/${val}`);
+    }
+
+    // Combat
+    for (const [key, val] of Object.entries(jsonData.combat)) {
+      combatData[key] = [];
+      for (let aux of val) {
+        combatData[key].push(loadImage(`${aux}`));
+      }
     }
 
     // - Industries
@@ -96,13 +108,15 @@ function preload() {
     }
     
     // - Locomotive
-    for (const [key, val] of Object.entries(jsonData.locomotive)) {
+    for (const [key, val] of Object.entries(jsonData.locomotive.type2)) {
+      //console.log(key,val)
       locomotiveData[key] = {
         "imgList": [],
         "offset": val.offset
       };
       for (let filename of val.fileList) {
-        locomotiveData[key].imgList.push(loadImage("resources/locomotive/" + filename));
+        //console.log(filename)
+        locomotiveData[key].imgList.push(loadImage("resources/locomotive/type2/" + filename));
       }
     }
 
@@ -115,6 +129,16 @@ function preload() {
         wagonsData[key].img.push(loadImage(filename));
       }
     }
+
+    // Soldier
+    for (const [key, val] of Object.entries(jsonData.soldier)) {
+      soldierData[key] = [];
+      for (let i=0; i< val; i++) {
+        soldierData[key].push(loadImage(`resources/soldier/rifle/${key}/survivor-${key}_rifle_${i}.png`));
+      }
+    }
+    soldierData.fire = loadImage(`resources/soldier/rifle/shoot/fire.png`);
+    miscData.wall = loadImage(`resources/soldier/wall.png`);
 
     for (const [key, val] of Object.entries(jsonData.map)) {
       mapData2[key] = val;    
@@ -153,10 +177,31 @@ function populateBackgroundImages() {
   
   for (let i=-1;i<15;i++) {
     if (i%2)
-      combatImg.image(tracksData["H1"].img, i*128, 100);
+      combatImg.image(tracksData["H1"].img, i*128, 80);
     else
-      combatImg.image(tracksData["H2"].img, i*128, 100);
+      combatImg.image(tracksData["H2"].img, i*128, 80);
   }
+
+  let combatBoard = [
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1]
+  ];
+
+  for (let row=0; row<9; row++) {
+    for (let col=0; col<26; col++) {
+      if(combatBoard[row][col] == 1) {
+        combatImg.image(miscData.wall, col*70+40, row*70+160);
+      }
+    }
+  }
+
 }
 
 function initialize() {
@@ -187,6 +232,7 @@ function initialize() {
 }
 
 function setup() {  
+  // noLoop();
   createCanvas(1900, 1060);
   mainCanvas = createGraphics(width, height-60);
   hudCanvas = createGraphics(width, 60);  
@@ -199,15 +245,17 @@ function setup() {
   let aux = worldMap.map2screen(0, 2);
   cameraPos.set(aux.x, aux.y);
 
-  locomotive = new Locomotive(createVector(0, 2), 270.0); 
+  locomotive = new Locomotive(createVector(2, 3), 270.0); 
+  enemy = new Locomotive(createVector(2, 3), 270.0, 1); 
+  
 
   navigation = new Navigation();
 
-  currentScene = "Navigation";
+  //currentScene = "Navigation";
   // currentScene = "CityTrade";
   // currentCity = new ScnCityTrade(citiesData["Taoudeni"], industryData, roadsData, buildingsData, backgroundImg);
-  // currentScene = "Combat";
-  // currentCity = new ScnCombat(combatImg);
+  currentScene = "Combat";
+  currentCity = new ScnCombat(combatImg);
   // currentScene = "WagonTrade";
   // currentCity = new ScnWagonTrade(tracksData, trWagonData, backgroundImg);
 
@@ -222,7 +270,7 @@ function setup() {
       currentCity.show(mainCanvas, locomotive);
     break;
     case("Combat"):
-      currentCity.show(mainCanvas, locomotive);
+      currentCity.show(mainCanvas, locomotive, enemy);
     break;
   };
 
@@ -238,6 +286,7 @@ function redrawMap() {
 
 function draw() {  
   mainCanvas.background(0);
+  
   //hud.tick();
   //hud.update(locomotive.gear, locomotive.gold, round(locomotive.fuel), round(locomotive.velocity.mag()*10000));
   
@@ -256,7 +305,7 @@ function draw() {
     break;
     case("Combat"):
       currentCity.update();
-      currentCity.show(mainCanvas, locomotive);
+      currentCity.show(mainCanvas, locomotive, enemy);
     break;
     case("Mine"):
       mainCanvas.push();
@@ -280,9 +329,10 @@ function draw() {
   hud.show(hudCanvas);
 
   // Comrad text
-  // mainCanvas.fill(0,0,0,50)
+  // mainCanvas.fill(255,255,255,200)
+  // mainCanvas.noStroke()
   // mainCanvas.rect(mainCanvas.width/2,mainCanvas.height-100,mainCanvas.width,200);
-  // mainCanvas.image(miscData.comrad,75,mainCanvas.height-94)
+  //mainCanvas.image(miscData.comrad,mainCanvas.width-75,mainCanvas.height-94)
   // mainCanvas.noStroke()
   // mainCanvas.fill(0)
   // mainCanvas.textSize(30)
@@ -296,11 +346,22 @@ function draw() {
 }
 
 function mousePressed() {
-  if ((mouseButton === RIGHT) && (!mouseRightPressed)) {
-    prevMouseX = mouseX;
-    prevMouseY = mouseY;
-    mouseRightPressed = true;
-    mouseRightPressedPos.set(mouseX, mouseY);
+  switch(currentScene) {
+    case("Navigation"):
+      if ((mouseButton === RIGHT) && (!mouseRightPressed)) {
+        prevMouseX = mouseX;
+        prevMouseY = mouseY;
+        mouseRightPressed = true;
+        mouseRightPressedPos.set(mouseX, mouseY);
+      }
+    break;
+    case("Combat"):
+      if (mouseButton === RIGHT) {
+        currentCity.processClick(mouseX, mouseY, 2);
+      } else {
+        currentCity.processClick(mouseX, mouseY, 1);
+      }
+    break;
   }
 }
 
@@ -357,6 +418,10 @@ function keyPressed() {
     case("CityTrade"):
       currentCity.processKey(keyCode);
     break;
+    case("Combat"):
+      currentCity.processKey(keyCode);
+      console.log(keyCode);
+    break;
     
     case("WagonTrade"):
       currentCity.processKey(keyCode);
@@ -377,6 +442,10 @@ function mouseClicked() {
       if (action == 1)
         currentScene = "Navigation";
         redrawMap();
+    break;
+    case("Combat"):
+      //currentCity.processClick(mouseX, mouseY, 1);
+      
     break;
     
     case("WagonTrade"):

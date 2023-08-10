@@ -34,6 +34,10 @@ Temporal8_Real_Industries_32bpp-Beta_3 by temporal8
 https://www.tt-forums.net/viewtopic.php?t=90183
 
 
+Soldier by Riley Gombart
+https://opengameart.org/content/animated-top-down-survivor-player
+
+
 zbase  by Rubidium, planetmaker, Zephyris  
 https://bananas.openttd.org/package/base-graphics/7a423332
 
