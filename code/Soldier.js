@@ -28,7 +28,7 @@ class Soldier {
     this.size = [60, 60];
     this.speedCount = this.spriteSpeed;
     this.targetLoc = createVector(-1.0, -1.0);
-    this.speed = 1.5;
+    this.speed = 0.5;
     this.lives = 100;
     this.player = player;   // 0 human, 1 enemy
     this.action = "idle"

@@ -36,7 +36,6 @@ let soldierData = {};
 let combatData = {};
 let tileChangesData;
 
-
 let locomotive, enemy;
 let worldMap;
 let cities = {};
@@ -49,10 +48,25 @@ let currentCity, currentScene;
 
 let navigation;
 
-
 let backgroundImg, combatImg;
 
 let events;
+let combatBoard = [
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0],
+  [0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0],
+  [0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+];
+
+
+let combatFactor = 1;
 
 function preload() {
   loadJSON("resources/allResources.json", jsonData => {
@@ -155,52 +169,76 @@ function populateBackgroundImages() {
       x = col*128*2 + (128 * (row%2)+1) -128
       y = row*64 -64;
       backgroundImg.image(tracksData["0"].img, x, y);
-      combatImg.image(tracksData["0"].img, x, y);
+      //combatImg.image(tracksData["0"].img, x, y);
+    }
+  }
+
+  
+
+
+  // if (!halfSizeCombat) {
+  //   for (let row=0; row<17*4; row++) {
+  //     for (let col=0; col<9*4; col++) {
+  //       x = col*32*2 + (32 * (row%2)+1) - 32
+  //       y = row*16-16;
+  //       combatImg.image(tracksData["0"].img, x, y, 64,32);
+  //     }
+  //   }    
+  // } else {
+  //   for (let row=0; row<17; row++) {
+  //     for (let col=0; col<9; col++) {
+  //       x = col*128*2 + (128 * (row%2)+1) -128
+  //       y = row*64 -64;
+  //       combatImg.image(tracksData["0"].img, x, y);
+  //     }
+  //   }
+  // }
+  
+  for (let row=0; row<17*4; row++) {
+    for (let col=0; col<9*4; col++) {
+      x = col*32*2 + (32 * (row%2)+1) - 32
+      y = row*16-16;
+      combatImg.image(tracksData["0"].img, x, y, 64,32);
     }
   }
   for (let i=-1;i<15;i++) {
     if (i%2) {
-      backgroundImg.image(tracksData["H1"].img, i*128, mainCanvas.height-50);
-      // backgroundImg.image(tracksData["H1"].img, i*128, 825-90);
+      combatImg.image(tracksData["H1"].img, i*128, 80);
       combatImg.image(tracksData["H1"].img, i*128, mainCanvas.height-50);
     }
     else {
-      backgroundImg.image(tracksData["H2"].img, i*128, mainCanvas.height-50);
-      // backgroundImg.image(tracksData["H2"].img, i*128, 825-90);
+      combatImg.image(tracksData["H2"].img, i*128, 80);
       combatImg.image(tracksData["H2"].img, i*128, mainCanvas.height-50);
     }
   }
+
+  for (let i=0; i<26; i++) {
+    for (let j=0; j<11; j++) {
+      combatImg.push();
+      combatImg.noFill()
+      combatImg.strokeWeight(0.1)
+      combatImg.rect(40+i*70,120+j*70,70,70)
+      combatImg.pop();
+    }
+  }
+
+
+
 
   // for (let i=0; i<7; i++) {
   //   backgroundImg.image(tracksData["BC"].img, 256*2+i*128, 600-i*64);
   // }
   
-  for (let i=-1;i<15;i++) {
-    if (i%2)
-      combatImg.image(tracksData["H1"].img, i*128, 80);
-    else
-      combatImg.image(tracksData["H2"].img, i*128, 80);
-  }
+  // for (let i=-1;i<15;i++) {
+  //   if (i%2)
+  //     combatImg.image(tracksData["H1"].img, i*128, 80);
+  //   else
+  //     combatImg.image(tracksData["H2"].img, i*128, 80);
+  // }
 
-  let combatBoard = [
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1]
-  ];
 
-  for (let row=0; row<9; row++) {
-    for (let col=0; col<26; col++) {
-      if(combatBoard[row][col] == 1) {
-        combatImg.image(miscData.wall, col*70+40, row*70+160);
-      }
-    }
-  }
+
+
 
 }
 
@@ -232,7 +270,7 @@ function initialize() {
 }
 
 function setup() {  
-  // noLoop();
+  //noLoop();
   createCanvas(1900, 1060);
   mainCanvas = createGraphics(width, height-60);
   hudCanvas = createGraphics(width, 60);  
@@ -251,7 +289,7 @@ function setup() {
 
   navigation = new Navigation();
 
-  //currentScene = "Navigation";
+  // currentScene = "Navigation";
   // currentScene = "CityTrade";
   // currentCity = new ScnCityTrade(citiesData["Taoudeni"], industryData, roadsData, buildingsData, backgroundImg);
   currentScene = "Combat";
@@ -372,13 +410,20 @@ function mouseReleased() {
 }
 
 function mouseDragged() {
-  if (mouseRightPressed) {
-    cameraPos.x -= (mouseX - prevMouseX)*(5-cameraPos.z),
-    cameraPos.y -= (mouseY - prevMouseY)*(5-cameraPos.z);
-    prevMouseX = mouseX;
-    prevMouseY = mouseY;
-    redrawMap();
-    redraw();
+  switch(currentScene) {
+    case("Navigation"):
+      if (mouseRightPressed) {
+        cameraPos.x -= (mouseX - prevMouseX)*(5-cameraPos.z),
+        cameraPos.y -= (mouseY - prevMouseY)*(5-cameraPos.z);
+        prevMouseX = mouseX;
+        prevMouseY = mouseY;
+        redrawMap();
+        redraw();
+      }
+    break;
+    case("Combat"):
+      //currentCity.mouseDragged();
+    break;
   }
 }
 
@@ -420,7 +465,6 @@ function keyPressed() {
     break;
     case("Combat"):
       currentCity.processKey(keyCode);
-      console.log(keyCode);
     break;
     
     case("WagonTrade"):
@@ -429,7 +473,7 @@ function keyPressed() {
   }
 }
 
-function mouseClicked() {
+function mouseDown() {
   let action;
   switch(currentScene) {
     case("Navigation"):
@@ -444,7 +488,7 @@ function mouseClicked() {
         redrawMap();
     break;
     case("Combat"):
-      //currentCity.processClick(mouseX, mouseY, 1);
+      currentCity.processClick(mouseX, mouseY,1);
       
     break;
     
@@ -457,3 +501,5 @@ function mouseClicked() {
     
   }  
 }
+
+

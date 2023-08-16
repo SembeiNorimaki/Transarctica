@@ -204,20 +204,19 @@ class WorldMap {
   //   //image(this.fullImage[1],-width/2,-height/2)   
   // }
 
-  screen2map(screenX, screenY) {
+  screen2map(x, y) {
     return createVector(
-      (screenX / this.TILE_WIDTH_HALF + screenY / this.TILE_HEIGHT_HALF) / 2, 
-      (screenY / this.TILE_HEIGHT_HALF - screenX / this.TILE_WIDTH_HALF) / 2
+      (x / this.TILE_WIDTH_HALF + y / this.TILE_HEIGHT_HALF) / 2, 
+      (y / this.TILE_HEIGHT_HALF - x / this.TILE_WIDTH_HALF) / 2
     );
   }
   
-  map2screen(x, y) {
+  map2screen(x, y, z) {
     return createVector(
       (x - y) * this.TILE_WIDTH_HALF,
-      (x + y) * this.TILE_HEIGHT_HALF
+      (x + y) * this.TILE_HEIGHT_HALF - z*32
     );
   }
-  
 
   idx2map(idx) {
     return createVector(floor(idx / this.NCOLS), idx % this.NCOLS);
@@ -225,6 +224,14 @@ class WorldMap {
   
   map2idx(pos) {
     return pos.y * this.NCOLS + pos.x;
+  }
+
+  combatScreen2map(x, y) {
+    let tileDim = [70, 70];
+    let offset = [40, 120];
+    let xx = (x-offset[0])/tileDim[0];
+    let yy = (y-offset[1])/tileDim[1];
+    return createVector(int(xx), int(yy));
   }
 
   changeTile(row, col) {
@@ -235,6 +242,72 @@ class WorldMap {
       return true;
     }
     return false;    
+  }
+
+  drawTileHeightMap(canvas, row, col, cameraPos) {
+    let currentHeight = int(this.heightmap[row][col] / 0x10);
+    let screenPos = this.map2screen(col, row, currentHeight);
+    screenPos.sub(cameraPos);
+    screenPos.add(canvas.width/2, canvas.height/2);
+
+    if (screenPos.x < -this.TILE_WIDTH_HALF ||
+        screenPos.y < -this.TILE_HEIGHT_HALF || 
+        screenPos.x > canvas.width + this.TILE_WIDTH_HALF || 
+        screenPos.y > canvas.height + this.TILE_HEIGHT_HALF) {
+      return;
+    }
+    try {  
+      let heightTile = this.heightmap[row][col] % 0x10;
+
+      
+      if (heightTile == 0x00) {
+        if (currentHeight == 0) {
+          canvas.image(this.tracks["water"].img, screenPos.x, screenPos.y);
+          //return
+        } else {
+          canvas.image(this.tracks["0"].img, screenPos.x, screenPos.y);
+        }
+      } else if (heightTile == 0x01) {
+        if (currentHeight == 0)
+          canvas.image(this.tracks["waterN"].img, screenPos.x, screenPos.y-16);
+        else
+          canvas.image(this.tracks["wxyZ"].img, screenPos.x, screenPos.y-16);
+      } else if (heightTile == 0x08) {
+        if (currentHeight == 0)
+          canvas.image(this.tracks["waterS"].img, screenPos.x, screenPos.y-16);
+        else
+          canvas.image(this.tracks["Wxyz"].img, screenPos.x, screenPos.y-16);
+      } else if (heightTile == 0x03) {
+        if (currentHeight == 0)
+          canvas.image(this.tracks["waterE"].img, screenPos.x, screenPos.y);
+        else
+          canvas.image(this.tracks["wXyz"].img, screenPos.x, screenPos.y);
+      } else if (heightTile == 0x06) {
+        if (currentHeight == 0)
+          canvas.image(this.tracks["waterW"].img, screenPos.x, screenPos.y);
+        else
+          canvas.image(this.tracks["wxYz"].img, screenPos.x, screenPos.y);
+      } else if (heightTile == 0x02) {
+        canvas.image(this.tracks["wXyZ"].img, screenPos.x, screenPos.y-16);
+      } else if (heightTile == 0x04) {
+        canvas.image(this.tracks["wxYZ"].img, screenPos.x, screenPos.y-16);
+      } else if (heightTile == 0x05) {
+        canvas.image(this.tracks["WXyz"].img, screenPos.x, screenPos.y-16);
+      } else if (heightTile == 0x07) {
+        canvas.image(this.tracks["WxYz"].img, screenPos.x, screenPos.y-16); //
+      } else if (heightTile == 0x09) {
+        canvas.image(this.tracks["wXYZ"].img, screenPos.x, screenPos.y+16);
+      } else if (heightTile == 0x0A) {
+        canvas.image(this.tracks["WXyZ"].img, screenPos.x, screenPos.y);
+      } else if (heightTile == 0x0B) {
+        canvas.image(this.tracks["WxYZ"].img, screenPos.x, screenPos.y);
+      } else if (heightTile == 0x0C) {
+        canvas.image(this.tracks["WXYz"].img, screenPos.x, screenPos.y+16);
+      } 
+    } catch (error) {
+      //console.log(error)
+      return;
+    }
   }
 
   drawTile(canvas, row, col, cameraPos) {
@@ -367,6 +440,9 @@ class WorldMap {
     //canvas.text(`${col}, ${row}`, screenPos.x, screenPos.y)
   }
 
+  showHeightMap(canvas, cameraPos) {
+
+  }
   show(canvas, cameraPos) {
     // for(let row=0; row<this.NROWS; row++) {
     //   for(let col=0; col<this.NCOLS; col++) {
@@ -385,7 +461,7 @@ class WorldMap {
 
     for(let row=rowmin; row<=rowmax; row++) {
       for(let col=colmin; col<=colmax; col++) {
-        this.drawTile(canvas, int(row), int(col), cameraPos);
+        this.drawTileHeightMap(canvas, int(row), int(col), cameraPos);
       }
     }
 

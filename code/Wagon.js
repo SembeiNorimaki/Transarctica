@@ -85,7 +85,10 @@ class Wagon {
 
   showHorizontal2(canvas, pos) {
     canvas.imageMode(CORNER)
-    canvas.image(this.img[this.spriteId], pos.x, pos.y - this.offsety[this.spriteId]);
+    
+      canvas.image(this.img[this.spriteId], pos.x, pos.y - this.offsety[this.spriteId],
+        this.img[this.spriteId].width*combatFactor, this.img[this.spriteId].height*combatFactor);
+    
     canvas.imageMode(CENTER)  
   }
 

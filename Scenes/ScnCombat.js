@@ -16,11 +16,15 @@
 
 class ScnCombat {
   constructor(backgroundImg) {
-    this.board = [
-      [0,0,0,0]
-      [0,0,0,0]
-      [0,0,0,0]
-    ];
+    
+
+      for (let row=0; row<9; row++) {
+        for (let col=0; col<26; col++) {
+          if(combatBoard[row][col] == 1) {
+            backgroundImg.image(miscData.wall, col*70+40, row*70+120-4, miscData.wall.width, miscData.wall.height);
+          }
+        }
+      }
 
     this.maskImage = createGraphics(backgroundImg.width,backgroundImg.height);
     //this.maskImage.fill(255);
@@ -28,27 +32,49 @@ class ScnCombat {
     this.backgroundImg = backgroundImg;
     this.trainXpos = 1600;
     this.enemyTrainXpos = 1000;
+    this.selectedWagon = null;
 
     this.soldiers = [];
     this.enemies = [];
+    this.maxVel = 2.0;
+    this.vel = 0.0;  
+    this.acc = 0.0;
+
+    this.bullet = null;
+    //this.combatMap = new CombatMap();
 
     this.soldiers.push(new Soldier(createVector(830, 870), 0));
     this.soldiers.push(new Soldier(createVector(900, 870), 0));
     this.soldiers.push(new Soldier(createVector(970, 870), 0));
     
     this.enemies.push(new Soldier(createVector(900, 120), 1));
-    this.enemies[0].setTargetLoc(900,500)
+    this.enemies.push(new Soldier(createVector(970, 120), 1));
+    this.enemies[0].setTargetLoc(775,300)
+    this.enemies[1].setTargetLoc(775+70*4,370)
     // this.soldiers[0].setTargetLoc(800,200)
 
     this.selectedSoldier = NaN;
   }
   
-  update() {
-
-  }
 
   processClick(x, y, button) {
-    // if (button == 1) {   // left button
+    if (button == 1) {   // left button
+      if (y > 900 && y < 980) {
+        let idx = locomotive.clickHorizontalTrain(this.trainXpos, x, y);
+        this.selectedWagon = idx;
+        if (locomotive.wagons[idx].name == "Cannon") {
+          console.log("Shoot cannon");
+          this.bullet = new Bullet(createVector(locomotive.wagons[idx].pos.x+locomotive.wagons[idx].halfSize[0],880),
+          createVector(this.vel, -15))
+        }
+        else if (locomotive.wagons[idx].name == "Machinegun") {
+          console.log("Shoot machinegun");
+        }
+        console.log(`Clicked wagon ${idx} of type ${locomotive.wagons[idx].name}`)
+      } 
+      else {
+        //console.log(worldMap.combatScreen2map(x,y).array())
+      }
     //   for (let soldier of this.soldiers) {
     //     this.selectedSoldier = NaN;
     //     if (soldier.isClicked(x,y)) {
@@ -58,13 +84,16 @@ class ScnCombat {
     //       soldier.selected = false;
     //     }
     //   }
-    // } 
+    } 
     if (button == 2) {  // right button
       this.selectedSoldier.setTargetLoc(x,y)
     }
+
+    
   }
 
   processKey(keyCode) {
+
     if (keyCode == 49) {  // number 1
       this.selectedSoldier = this.soldiers[0];
       this.soldiers[0].selected = true;
@@ -80,10 +109,28 @@ class ScnCombat {
       this.soldiers[0].selected = false;
       this.soldiers[1].selected = false;
       this.soldiers[2].selected = true;
+    } else if (keyCode == 37) { // left arrow
+      if (this.acc > 0)
+        this.acc = 0.0;
+      else if (this.acc == 0) {
+        this.acc = -0.01;
+      }
+    } else if (keyCode == 39) { // right arrow
+      if (this.acc < 0)
+        this.acc = 0.0;
+      else if (this.acc == 0) {
+        this.acc = 0.01;
+      }
     }
   }
 
   update() {
+    this.vel += this.acc;
+    if (this.vel > this.maxVel) {
+      this.acc = 0;
+      this.vel = this.maxVel;
+    }
+    this.trainXpos += this.vel;
     for (let soldier of this.soldiers) {
       for (let enemy of this.enemies) {
         if (soldier.inRange(enemy.pos)) {
@@ -97,10 +144,37 @@ class ScnCombat {
 
       }
     }
+    
+
+  }
+  
+  show(canvas, train, enemy) {
+    canvas.image(this.backgroundImg, this.backgroundImg.width/2, this.backgroundImg.height/2);
+    train.showHorizontalTrain(canvas, this.trainXpos, canvas.height-50);
+    enemy.showHorizontalTrain(canvas, this.enemyTrainXpos, 30);
+    try {
+      this.bullet.update();
+      this.bullet.show(canvas);
+      //canvas.circle(this.bullet.pos.x, this.bullet.pos.y, 500);
+    }catch (err){
+      //console.log(err)
+    }
+    for (let soldier of this.soldiers) {
+      //canvas.circle(soldier.pos.x,soldier.pos.y,500)
+      //canvas.circle(soldier.pos.x, soldier.pos.y, 300);
+    }
+    for (let soldier of this.soldiers) {
+      soldier.update();
+      soldier.show(canvas);
+    }
+    for (let enemy of this.enemies) {
+      enemy.update();
+      enemy.show(canvas);
+    }
+    
   }
 
-
-  show(canvas, train, enemy) {
+  /*show(canvas, train, enemy) {
     let maskImage = createGraphics(backgroundImg.width,backgroundImg.height);
     
     
@@ -151,5 +225,5 @@ class ScnCombat {
     // canvas.image(soldierData.idle[0],0,100,70,70);
     // canvas.image(soldierData.idle[0],0,200,70,70);
     // canvas.pop();
-  }
+  }*/
 }

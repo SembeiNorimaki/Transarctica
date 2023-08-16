@@ -86,6 +86,8 @@ class Locomotive {
     this.addWagon("Copper");      // 5
     this.addWagon("Wood");        // 6
     this.addWagon("Container");   // 7
+    this.addWagon("Cannon");      // 8
+    this.addWagon("Machinegun");      // 8
     
 
     this.wagons[3].addResource(0);
@@ -147,12 +149,23 @@ class Locomotive {
     this.wagons[0].showHorizontal(canvas);
       
     for (let i=1; i<this.wagons.length; i++) {
-      xpos -= this.wagons[i].halfSize[0]*2+5;
+      
+      xpos -= this.wagons[i].halfSize[0]*2*combatFactor+5;
+      
       this.wagons[i].setPos(createVector(xpos, ypos));
       this.wagons[i].showHorizontal(canvas);
-      canvas.textAlign(CENTER, CENTER);
-      canvas.text(`${this.wagons[i].usedSpace} / ${this.wagons[i].capacity}`, xpos+this.wagons[i].halfSize[0], ypos + 30);   
-      canvas.textAlign(LEFT);
+      
+      // canvas.textAlign(CENTER, CENTER);
+      // canvas.text(`${this.wagons[i].usedSpace} / ${this.wagons[i].capacity}`, xpos+this.wagons[i].halfSize[0], ypos + 30);   
+      // canvas.textAlign(LEFT);
+      // canvas.rectMode(CORNER);
+      
+      // canvas.fill("green");
+      // canvas.rect(xpos+10, ypos+30, 
+      //   (this.wagons[i].halfSize[0]*2-20)*this.wagons[i].hitpointsLeft/this.wagons[i].hitpoints, 5);
+      // canvas.fill("red");
+      // canvas.rect(xpos+10+(this.wagons[i].halfSize[0]*2-20)*this.wagons[i].hitpointsLeft/this.wagons[i].hitpoints, ypos+30, 
+      //   (this.wagons[i].halfSize[0]*2-20)*(this.wagons[i].hitpoints-this.wagons[i].hitpointsLeft)/this.wagons[i].hitpoints, 5);
     }
   }
 
